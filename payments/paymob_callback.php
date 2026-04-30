@@ -7,7 +7,7 @@ if (!isset($conn) || !$conn) {
   exit("DB connection missing.");
 }
 
-define("PAYMOB_HMAC_SECRET", "FDE943B9CD3ACC94E310EA5E774F4B0E");
+require_once __DIR__ . "/../config.php";
 
 function callback_fail($msg, $code = 400){
   http_response_code($code);
@@ -92,7 +92,10 @@ $calculatedHmac = hash_hmac("sha512", implode("", $hmacFields), PAYMOB_HMAC_SECR
 
 if ($receivedHmac === "" || !hash_equals($calculatedHmac, $receivedHmac)) {
   file_put_contents(__DIR__ . "/callback_debug.txt", "INVALID HMAC\n", FILE_APPEND);
+  http_response_code(403);
+  exit("Invalid HMAC.");
 }
+
 
 /*
 |--------------------------------------------------------------------------

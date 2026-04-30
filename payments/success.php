@@ -39,6 +39,29 @@ if ($orderId > 0) {
 if (!$order) {
   die("Order not found.");
 }
+
+$sessionUserId = (int)($_SESSION["user_id"] ?? 0);
+$orderCustomerId = (int)($order["customer_user_id"] ?? 0);
+$orderBusinessId = (int)($order["business_user_id"] ?? 0);
+
+if ($sessionUserId <= 0) {
+  header("Location: ../auth/login.php");
+  exit;
+}
+
+if ($orderCustomerId > 0 && $orderCustomerId !== $sessionUserId) {
+  http_response_code(403);
+  die("Unauthorized.");
+}
+if ($orderBusinessId > 0 && $orderBusinessId !== $sessionUserId) {
+  http_response_code(403);
+  die("Unauthorized.");
+}
+
+if (($order["payment_status"] ?? "") !== "paid") {
+  header("Location: payment_failed.php?order_id=" . urlencode((string)$orderId));
+  exit;
+}
 ?>
 <!doctype html>
 <html lang="en">

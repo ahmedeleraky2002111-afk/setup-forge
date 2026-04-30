@@ -57,11 +57,7 @@ function post_json($url, $payload){
 |--------------------------------------------------------------------------
 | Replace these with your real values from Paymob dashboard
 */
-define("PAYMOB_API_KEY", "ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2TVRFMU1UUTVOeXdpYm1GdFpTSTZJbWx1YVhScFlXd2lmUS5lRDd6eVZVb2hNLW02QXU5NDg0NTBJd1lwS0J1QjFFR2U4c3kyc0tpXzAyb0lWWDFRaTdNZDBZZTNwTjB6TkFyZHRsZVk5Qmx3cklSQ2FocjFfM0Fsdw==");
-define("PAYMOB_INTEGRATION_ID", 5609912); // payment integration id
-define("PAYMOB_IFRAME_ID", 1030719);      // hosted iframe id
-define("PAYMOB_HMAC_SECRET", "FDE943B9CD3ACC94E310EA5E774F4B0E");
-
+require_once __DIR__ . "/../config.php";
 /*
 |--------------------------------------------------------------------------
 | Load order + ownership
