@@ -1,0 +1,34 @@
+Array
+(
+    [time] => 2026-04-08 19:37:02
+    [received_hmac] => e3d4c08e50d1634a64d8a792fad3b8f4cb5b418f6cd78131a886486fbd93dc6d18e436eaf7c807db093b6767773462b91afd367e58b5d3e966a6ac3affc172b1
+    [calculated_hmac] => e3d4c08e50d1634a64d8a792fad3b8f4cb5b418f6cd78131a886486fbd93dc6d18e436eaf7c807db093b6767773462b91afd367e58b5d3e966a6ac3affc172b1
+    [hmac_fields] => Array
+        (
+            [0] => 6999900
+            [1] => 2026-04-08T19:36:19.598553
+            [2] => EGP
+            [3] => false
+            [4] => false
+            [5] => 441563712
+            [6] => 5609912
+            [7] => true
+            [8] => false
+            [9] => false
+            [10] => false
+            [11] => true
+            [12] => false
+            [13] => 502577182
+            [14] => 2206214
+            [15] => false
+            [16] => 4242
+            [17] => Visa
+            [18] => card
+            [19] => true
+        )
+
+    [payload_obj_id] => 441563712
+    [merchant_order_id] => 61
+)
+
+--------------------

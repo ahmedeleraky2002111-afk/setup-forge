@@ -1,0 +1,191 @@
+Array
+(
+    [time] => 2026-04-18 20:04:29
+    [order_id] => 83
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 120
+    [labor_data] => {"barista":0,"cashier":0,"waiter":1,"chef":1,"cleaner":0}
+    [technician_data] => ["pos","electrical"]
+    [txn_order_id] => 508650033
+    [merchant_order_id] => 83
+    [amount_cents] => 12359400
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 83
+entered success block for order 83
+entered success block for order 83
+entered success block for order 83
+entered success block for order 83
+Array
+(
+    [time] => 2026-04-22 01:19:21
+    [order_id] => 84
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 122
+    [labor_data] => {"barista":0,"cashier":1,"waiter":0,"chef":0,"cleaner":0}
+    [technician_data] => ["pos","electrical"]
+    [txn_order_id] => 510652774
+    [merchant_order_id] => 84
+    [amount_cents] => 23599300
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 84
+entered success block for order 84
+entered success block for order 84
+entered success block for order 84
+entered success block for order 84
+entered success block for order 84
+entered success block for order 84
+Array
+(
+    [time] => 2026-04-22 02:04:22
+    [order_id] => 85
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 123
+    [labor_data] => {"barista":0,"cashier":0,"waiter":1,"chef":0,"cleaner":0}
+    [technician_data] => ["electrical"]
+    [txn_order_id] => 510662771
+    [merchant_order_id] => 85
+    [amount_cents] => 4599800
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 85
+entered success block for order 85
+Array
+(
+    [time] => 2026-04-22 11:45:41
+    [order_id] => 86
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 124
+    [labor_data] => {"barista":0,"cashier":0,"waiter":1,"chef":1,"cleaner":0}
+    [technician_data] => ["pos","electrical"]
+    [txn_order_id] => 510780569
+    [merchant_order_id] => 86
+    [amount_cents] => 18399200
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 86
+entered success block for order 86
+entered success block for order 86
+entered success block for order 86
+entered success block for order 86
+entered success block for order 86
+Array
+(
+    [time] => 2026-04-22 12:04:32
+    [order_id] => 88
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 126
+    [labor_data] => {"barista":0,"cashier":0,"waiter":1,"chef":1,"cleaner":0}
+    [technician_data] => []
+    [txn_order_id] => 510788558
+    [merchant_order_id] => 88
+    [amount_cents] => 16299200
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 88
+entered success block for order 88
+entered success block for order 88
+entered success block for order 88
+entered success block for order 88
+Array
+(
+    [time] => 2026-04-22 12:21:53
+    [order_id] => 89
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 127
+    [labor_data] => {"barista":0,"cashier":0,"waiter":1,"chef":1,"cleaner":0}
+    [technician_data] => ["pos","electrical"]
+    [txn_order_id] => 510795717
+    [merchant_order_id] => 89
+    [amount_cents] => 18199300
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 89
+entered success block for order 89
+entered success block for order 89
+entered success block for order 89
+entered success block for order 89
+entered success block for order 89
+Array
+(
+    [time] => 2026-04-22 15:54:55
+    [order_id] => 90
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 128
+    [labor_data] => {"barista":0,"cashier":0,"waiter":1,"chef":1,"cleaner":0}
+    [technician_data] => ["pos","electrical"]
+    [txn_order_id] => 510910127
+    [merchant_order_id] => 90
+    [amount_cents] => 31179200
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 90
+entered success block for order 90
+entered success block for order 90
+entered success block for order 90
+entered success block for order 90
+entered success block for order 90

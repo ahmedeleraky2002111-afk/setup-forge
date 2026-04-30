@@ -1,0 +1,39 @@
+gitignore# Database connection - NEVER push this
+db.php
+
+# Environment and config files - NEVER push these
+.env
+.env.local
+.env.production
+config/database.php
+config/config.php
+
+# PHP dependencies
+vendor/
+
+# PostgreSQL dumps
+*.sql
+*.dump
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+
+# Uploaded files (user data)
+uploads/
+storage/
+
+# Cache
+cache/
+tmp/
