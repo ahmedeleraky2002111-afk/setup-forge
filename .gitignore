@@ -1,4 +1,5 @@
-gitignore# Database connection - NEVER push this
+gconfig.php
+itignore# Database connection - NEVER push this
 db.php
 
 # Environment and config files - NEVER push these
