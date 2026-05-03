@@ -2,6 +2,7 @@
 // auth/signup.php
 session_start();
 require_once "../db.php";
+/** @var \PgSql\Connection $conn */
 
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
@@ -29,12 +30,12 @@ if (!empty($_SESSION["signup_intent"]) && $_SESSION["signup_intent"] === "busine
 /* Wizard data (used only for business signup) */
 $w = $_SESSION["wizard"] ?? [];
 $business_type = $w["business_type"] ?? null;
-$place_size    = $w["size"] ?? null;
+$place_size    = $w["indoor_seats"] ?? null;
 $budget_egp    = (int)($w["budget"] ?? 0);
 
 /* Only force wizard guard when signup intent is business */
 if (!empty($_SESSION["signup_intent"]) && $_SESSION["signup_intent"] === "business") {
-  if (!$business_type || !$place_size || $budget_egp <= 0) {
+  if (!$business_type || ($place_size === null || (int)$place_size < 1) || $budget_egp <= 0) {
     header("Location: ../setup.php?step=1");
     exit;
   }

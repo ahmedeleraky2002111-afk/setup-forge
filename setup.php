@@ -41,7 +41,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
   if ($currentStep === 3) {
 
-  $_SESSION["wizard"]["size"] = $_POST["size"] ?? null;
+  $_SESSION["wizard"]["indoor_seats"]  = max(1, (int)($_POST["indoor_seats"]  ?? 1));
+  $_SESSION["wizard"]["outdoor_seats"] = max(0, (int)($_POST["outdoor_seats"] ?? 0));
 
   redirect_step(4);
 }
@@ -119,7 +120,7 @@ if ($currentStep === 8) {
 
   if (!isset($_SESSION["user_id"])) {
     $_SESSION["signup_intent"] = "business";
-    header("Location: auth/signup.php?next=" . urlencode("../packages.php"));
+    header("Location: auth/signup.php?next=" . urlencode("http://localhost/setupforge/packages.php"));
     exit;
   }
 
@@ -133,7 +134,8 @@ if ($currentStep === 8) {
 $w = $_SESSION["wizard"] ?? [];
 $businessName = trim($w["business_name"] ?? "");
 $business = $w["business_type"] ?? "";
-$size = $w["size"] ?? "";
+$indoorSeats  = (int)($w["indoor_seats"]  ?? 0);
+$outdoorSeats = (int)($w["outdoor_seats"] ?? 0);
 $restaurantType = $w["restaurant_type"] ?? "";
 $modules = $w["modules"] ?? [];
 $modules = array_values(array_filter($modules, function($m){
@@ -143,12 +145,12 @@ $moduleTiers = $w["module_tiers"] ?? []; // ✅ per-module tiers
 $budget = (int)($w["budget"] ?? 0);
 
 $businessTypes = ["Restaurant","Café","Office","Gym","Salon"];
-$sizes = ["Small","Medium","Large"];
 $restaurantTypes = [
   "fast_food" => "Fast Food",
-  "standard_dining" => "Standard Dining",
-  "premium_dining" => "Premium Dining"
-];  
+  "standard_dining" => "Casual Dining",
+  "premium_dining" => "Premium Dining",
+  "cloud_kitchen" => "Delivery Only"
+];
 
 $modulesList = [
   "kitchen"     => "Kitchen / Equipment",
@@ -166,8 +168,8 @@ if ($step < 0 || $step > 8) redirect_step(0);
 if ($step > 0 && $businessName === "") redirect_step(0);
 if ($step > 1 && $business === "") redirect_step(1);
 if ($step > 2 && $business === "Restaurant" && $restaurantType === "") redirect_step(2);
-if ($step > 3 && $size === "") redirect_step(3);
-if ($step > 4 && empty($modules)) redirect_step(4);
+if ($step > 3 && $indoorSeats < 1) redirect_step(3);
+
 if ($step > 5 && $budget <= 0) redirect_step(5);
 
 if ($step > 6 && !array_key_exists("installation_needed", $w)) {
@@ -434,7 +436,8 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
               $restaurantMeta = [
                 "fast_food" => "",
                 "standard_dining" => "",
-                "premium_dining" => ""
+                "premium_dining" => "",
+                "cloud_kitchen" => ""
               ];
             ?>
 
@@ -492,47 +495,45 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
   <?php elseif ($step === 3): ?>
 
-<h1 class="sf-step3-title">Choose your business size</h1>
-<p class="sf-step3-sub">This helps us estimate space, equipment, and layout recommendations.</p>
+<h1 class="sf-step3-title">How many seats?</h1>
+<p class="sf-step3-sub">Tell us your seating capacity so we can size your equipment and layout recommendations.</p>
 
 <form method="post" class="sf-step3-form">
-    <input type="hidden" name="step" value="3">
+  <input type="hidden" name="step" value="3">
 
-  <div class="sf-size-grid">
+  <div class="sf-seats-grid">
 
-    <label class="sf-size-card2">
-      <input type="radio" name="size" value="Small" <?= $size === "Small" ? "checked" : "" ?> required>
-      <div class="sf-size-title2">Small</div>
-      <div class="sf-size-media">
-        <img src="assets/images/restaurant/small.png" alt="Small">
-      </div>
-      <div class="sf-size-check2">✓</div>
-    </label>
+    <div class="sf-seats-field">
+      <label class="sf-seats-label" for="indoor_seats">Indoor Seats</label>
+      <input
+        class="sf-seats-input"
+        type="number"
+        id="indoor_seats"
+        name="indoor_seats"
+        min="1"
+        value="<?= $indoorSeats > 0 ? h($indoorSeats) : 1 ?>"
+        required
+      >
+    </div>
 
-    <label class="sf-size-card2">
-      <input type="radio" name="size" value="Medium" <?= $size === "Medium" ? "checked" : "" ?> required>
-      <div class="sf-size-title2">Medium</div>
-      <div class="sf-size-media">
-        <img src="assets/images/restaurant/medium.png" alt="Medium">
-      </div>
-      <div class="sf-size-check2">✓</div>
-    </label>
-
-    <label class="sf-size-card2">
-      <input type="radio" name="size" value="Large" <?= $size === "Large" ? "checked" : "" ?> required>
-      <div class="sf-size-title2">Large</div>
-      <div class="sf-size-media">
-        <img src="assets/images/restaurant/large.png" alt="Large">
-      </div>
-      <div class="sf-size-check2">✓</div>
-    </label>
+    <div class="sf-seats-field">
+      <label class="sf-seats-label" for="outdoor_seats">Outdoor Seats</label>
+      <input
+        class="sf-seats-input"
+        type="number"
+        id="outdoor_seats"
+        name="outdoor_seats"
+        min="0"
+        value="<?= h($outdoorSeats) ?>"
+      >
+    </div>
 
   </div>
 
   <div class="sf-actions">
-  <a class="sf-btn-main sf-btn-back" href="setup.php?step=2">← Back</a>
-  <button class="sf-btn-main sf-btn-next" type="submit">Next →</button>
-</div>
+    <a class="sf-btn-main sf-btn-back" href="setup.php?step=2">← Back</a>
+    <button class="sf-btn-main sf-btn-next" type="submit">Next →</button>
+  </div>
 </form>
 <?php elseif ($step === 4): ?>
 

@@ -11,8 +11,10 @@ function egp($n){ return number_format((int)$n) . " EGP"; }
 
 $w = $_SESSION["wizard"] ?? [];
 
-$business = $w["business_type"] ?? "";
-$size     = trim((string)($w["size"] ?? ""));
+$business     = $w["business_type"] ?? "";
+$size         = trim((string)($w["size"] ?? ""));
+$indoorSeats  = (int)($w["indoor_seats"]  ?? 0);
+$outdoorSeats = (int)($w["outdoor_seats"] ?? 0);
 $modules  = $w["modules"] ?? [];
 $moduleTiers = $w["module_tiers"] ?? [];
 $budget   = (int)($w["budget"] ?? 0);
@@ -28,7 +30,7 @@ $electronicsTier = $moduleTiers["electronics"] ?? "Balanced";
 $sizeNorm = ucfirst(strtolower($size));
 if (in_array($sizeNorm, ["Small","Medium","Large"], true)) $size = $sizeNorm;
 
-if (!$business || !$size || empty($modules) || $budget <= 0) {
+if (!$business || $indoorSeats < 1 || empty($modules) || $budget <= 0) {
   header("Location: setup.php?step=1");
   exit;
 }
@@ -650,8 +652,8 @@ function pick_best_under_unit_budget($catalog, $type, $unitBudget){
   return $catalog[$type][0];
 }
 
-function pos_quantities_by_size($size){
-  $terminals = ($size === "Large") ? 3 : (($size === "Medium") ? 2 : 1);
+function pos_quantities_by_size($indoorSeats){
+  $terminals = max(1, (int)ceil($indoorSeats / 20));
   return [
     "terminals" => $terminals,
     "printers"  => $terminals,
@@ -659,30 +661,36 @@ function pos_quantities_by_size($size){
   ];
 }
 
-function kitchen_quantities_by_size($size){
-  $isLarge = ($size === "Large");
-  $isMed   = ($size === "Medium");
+function kitchen_quantities_by_size($indoorSeats, $outdoorSeats){
+  $total = $indoorSeats + $outdoorSeats;
   return [
     "oven"      => 1,
     "fryer"     => 1,
-    "grill"     => ($isMed || $isLarge) ? 1 : 0,
+    "grill"     => $total >= 30 ? 1 : 0,
     "microwave" => 1,
-    "fridge"    => $isLarge ? 2 : 1,
+    "fridge"    => $total >= 70 ? 2 : 1,
     "freezer"   => 1,
     "blender"   => 1,
-    "mixer"     => ($isMed || $isLarge) ? 1 : 0,
+    "mixer"     => $total >= 30 ? 1 : 0,
     "coffee"    => 1
   ];
 }
 
-function furniture_quantities_by_size($size){
-  $isLarge = ($size === "Large");
-  $isMed   = ($size === "Medium");
-
+function furniture_quantities_by_size($indoorSeats, $restaurantType = "standard_dining", $outdoorSeats = 0){
+  $restaurantType = strtolower(trim((string)$restaurantType));
+  $tables = (int)ceil($indoorSeats / 4);
+  $chairs = $indoorSeats;
+  if ($restaurantType === "cloud_kitchen") {
+    $tvs = 0;
+  } else {
+    $indoorTvs  = max(1, (int)ceil($indoorSeats / 20));
+    $outdoorTvs = ($outdoorSeats > 0) ? (int)ceil($outdoorSeats / 30) : 0;
+    $tvs        = $indoorTvs + $outdoorTvs;
+  }
   return [
-    "table" => $isLarge ? 12 : ($isMed ? 8 : 4),
-    "chair" => $isLarge ? 48 : ($isMed ? 32 : 16),
-    "tv"    => $isLarge ? 2 : ($isMed ? 1 : 0),
+    "table" => $tables,
+    "chair" => $chairs,
+    "tv"    => $tvs,
   ];
 }
 function dining_set_target_spec($restaurantType, $size){
@@ -996,7 +1004,7 @@ function cart_total($cart){
 }
 
 function build_pos_cart_by_budget($catalog, $size, $cap){
-  $q = pos_quantities_by_size($size);
+  $q = pos_quantities_by_size((int)($GLOBALS["indoorSeats"] ?? 0));
   $termQty = (int)$q["terminals"];
   if ($termQty <= 0) $termQty = 1;
 
@@ -1145,7 +1153,7 @@ function build_pos_cart_by_budget($catalog, $size, $cap){
 }
 
 function build_kitchen_cart_by_budget($catalog, $size, $cap){
-  $q = kitchen_quantities_by_size($size);
+  $q = kitchen_quantities_by_size((int)($GLOBALS["indoorSeats"] ?? 0), (int)($GLOBALS["outdoorSeats"] ?? 0));
 
   $cart = ["items"=>[]];
 

@@ -4131,11 +4131,10 @@ font-weight: 550 !important;
 
 .sf-restaurant-type-grid{
   display: grid;
-  grid-template-columns: repeat(3, 300px);
+  grid-template-columns: repeat(2, 420px);
   justify-content: center;
-  gap: 18px;
-  width: fit-content;
-  max-width: 100%;
+  gap: 28px;
+  max-width: 868px;
   margin: 0 auto;
   overflow: visible;
 }
@@ -4165,7 +4164,7 @@ font-weight: 550 !important;
 
 .sf-restaurant-card-shell{
   position: relative;
-  height: 120px;
+  height: 170px;
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(0,0,0,.10);
