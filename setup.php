@@ -97,16 +97,6 @@ if ($currentStep === 6) {
     "cleaner" => in_array("cleaner", $staffRoles, true) ? 1 : 0
   ];
 
-  redirect_step(8);
-
-}
-
-if ($currentStep === 8) {
-
-  // keep logo handling simple for now
-  // later we can add real upload logic
-  $_SESSION["wizard"]["business_logo"] = $_FILES["business_logo"]["name"] ?? "";
-
   if (!isset($_SESSION["user_id"])) {
     $_SESSION["signup_intent"] = "business";
     header("Location: auth/signup.php?next=" . urlencode("http://localhost/setupforge/packages.php"));
@@ -115,6 +105,7 @@ if ($currentStep === 8) {
 
   header("Location: packages.php");
   exit;
+
 }
 }
 
@@ -152,7 +143,7 @@ $modulesList = [
 
 /* ---------- GUARD: prevent jumping ahead ---------- */
 if ($step === 2 && $business !== "Restaurant") redirect_step(3);
-if ($step < 0 || $step > 8) redirect_step(0);
+if ($step < 0 || $step > 6) redirect_step(0);
 
 if ($step > 0 && $businessName === "") redirect_step(0);
 if ($step > 1 && $business === "") redirect_step(1);
@@ -160,11 +151,6 @@ if ($step > 2 && $business === "Restaurant" && $restaurantType === "") redirect_
 if ($step > 3 && $indoorSeats < 1) redirect_step(3);
 
 if ($step > 5 && $budget <= 0) redirect_step(5);
-
-if ($step > 6 && !array_key_exists("installation_needed", $w)) {
-  redirect_step(6);
-}
-if ($step > 7 && $budget <= 0) redirect_step(5);
 $totalSteps = 9;
 $progressPct = (int)round((($step + 1) / $totalSteps) * 100);
 $stepTitles = [
@@ -590,105 +576,61 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
 <div class="sf-actions">
   <a class="sf-btn-main sf-btn-back" href="setup.php?step=5">← Back</a>
-  <button class="sf-btn-main sf-btn-next" type="submit">Next →</button>
+  <button class="sf-btn-main sf-btn-next" type="submit">Finish →</button>
 </div>
 
 </form>
 
-<?php elseif ($step === 7): ?>
-<h1 class="sf-setup-hero-title">Staffing Needs</h1>
-<p class="sf-card-hint">Tell us how many staff you need.</p>
-
-<form method="post">
-<input type="hidden" name="step" value="7">
-  <?php
-    $labor = $w["labor"] ?? [];
-    $barista = (int)($labor["barista"] ?? 0);
-    $cashier = (int)($labor["cashier"] ?? 0);
-    $waiter  = (int)($labor["waiter"] ?? 0);
-  ?>
-
-  <div class="row g-3">
-    <div class="col-md-4">
-      <div class="sf-field">
-        <label>Baristas</label>
-        <input type="number" name="labor_barista" class="form-control" min="0" value="<?= h((string)$barista) ?>">
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="sf-field">
-        <label>Cashiers</label>
-        <input type="number" name="labor_cashier" class="form-control" min="0" value="<?= h((string)$cashier) ?>">
-      </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="sf-field">
-        <label>Waiters</label>
-        <input type="number" name="labor_waiter" class="form-control" min="0" value="<?= h((string)$waiter) ?>">
-      </div>
-    </div>
-  </div>
-
-  <div class="sf-actions">
-<a class="sf-btn-main sf-btn-back" href="setup.php?step=6">← Back</a>
-  <button class="sf-btn-main sf-btn-next" type="submit">Next →</button>
-</div>
-</form>
 <?php elseif ($step === 5): ?>
 
 <h1 class="sf-setup-hero-title">What is your budget?</h1>
-<p class="sf-card-hint">We’ll generate packages that fit your range.</p>
+<p class="sf-card-hint">Choose the range that best fits your investment plan.</p>
 
 <form method="post" class="sf-step5-form">
-      <input type="hidden" name="step" value="5">
+  <input type="hidden" name="step" value="5">
+  <input type="hidden" name="budget" id="budget-hidden" value="<?= $budget ? h((string)$budget) : "" ?>" required>
 
-  <div class="sf-field" style="max-width: 520px; margin: 0 auto;">
-<label for="budget" style="display:block; text-align:center; ">
-  Budget (EGP)
-</label>    <input
-  id="budget"
-  name="budget"
-  type="text"
-  inputmode="numeric"
-  class="sf-budget-input"
-      placeholder="e.g. 250000"
-      value="<?= $budget ? h((string)$budget) : "" ?>"
-      required
-    >
+  <?php
+    $budgetOptions = [
+      ["label" => "Under 500,000 EGP",          "sub" => "Starter setup",       "value" => 250000],
+      ["label" => "500,000 - 1,500,000 EGP",    "sub" => "Mid-range build",     "value" => 1000000],
+      ["label" => "1,500,000 - 3,000,000 EGP",  "sub" => "Full fit-out",        "value" => 2250000],
+      ["label" => "3,000,000+ EGP",             "sub" => "Premium experience",  "value" => 4000000],
+    ];
+  ?>
+
+  <div class="sf-budget-grid">
+    <?php foreach ($budgetOptions as $opt): ?>
+      <button
+        type="button"
+        class="sf-budget-card <?= $budget === $opt["value"] ? "is-selected" : "" ?>"
+        data-value="<?= $opt["value"] ?>"
+      >
+        <div class="sf-budget-label"><?= h($opt["label"]) ?></div>
+        <div class="sf-budget-sub"><?= h($opt["sub"]) ?></div>
+      </button>
+    <?php endforeach; ?>
   </div>
 
   <div class="sf-actions">
-    <a class="sf-btn-main sf-btn-back" href="setup.php?step=3">← Back</a>
-    <button class="sf-btn-main sf-btn-next" type="submit">Next →</button>
+    <a class="sf-btn-main sf-btn-back" href="setup.php?step=3">&#8592; Back</a>
+    <button class="sf-btn-main sf-btn-next" type="submit">Next &#8594;</button>
   </div>
 </form>
-<?php elseif ($step === 8): ?>
 
-<h1 class="sf-setup-hero-title">Add your business logo</h1>
-<p class="sf-card-hint">Optional for now — you can always update it later.</p>
-
-<form method="post" enctype="multipart/form-data">
-  <input type="hidden" name="step" value="8">
-
-<div class="sf-field" style="max-width: 520px; margin: 0 auto; text-align:center;">
-        <label for="business_logo">Business Logo</label>
-    <input
-      id="business_logo"
-      type="file"
-      name="business_logo"
-      class="form-control"
-      accept="image/*"
-    >
-  </div>
-
-  <div class="sf-actions">
-  <a class="sf-btn-main sf-btn-back" href="setup.php?step=7">← Back</a>
-  <button class="sf-btn-main sf-btn-next" type="submit">Finish →</button>
-</div>
-</form>
-
+<script>
+(function(){
+  var cards = document.querySelectorAll(".sf-budget-card");
+  var hidden = document.getElementById("budget-hidden");
+  cards.forEach(function(card){
+    card.addEventListener("click", function(){
+      cards.forEach(function(c){ c.classList.remove("is-selected"); });
+      card.classList.add("is-selected");
+      hidden.value = card.dataset.value;
+    });
+  });
+})();
+</script>
 <?php endif; ?>
 
 <script>

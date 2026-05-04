@@ -44,6 +44,9 @@ if (!empty($_SESSION["wizard"]["pos_cart"])) {
 if (!empty($_SESSION["wizard"]["kitchen_cart"])) {
   $_SESSION["carts"]["kitchen"] = $_SESSION["wizard"]["kitchen_cart"];
 }
+if (!empty($_SESSION["wizard"]["furniture_cart"])) {
+  $_SESSION["carts"]["furniture"] = $_SESSION["wizard"]["furniture_cart"];
+}
 
 $carts = $_SESSION["carts"];
 

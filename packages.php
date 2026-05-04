@@ -16,15 +16,8 @@ $size         = trim((string)($w["size"] ?? ""));
 $indoorSeats  = (int)($w["indoor_seats"]  ?? 0);
 $outdoorSeats = (int)($w["outdoor_seats"] ?? 0);
 $modules  = $w["modules"] ?? [];
-$moduleTiers = $w["module_tiers"] ?? [];
 $budget   = (int)($w["budget"] ?? 0);
 $restaurantType = $w["restaurant_type"] ?? "standard_dining";
-
-$posTier         = $moduleTiers["pos"] ?? "Balanced";
-$kitchenTier     = $moduleTiers["kitchen"] ?? "Balanced";
-$furnitureTier   = $moduleTiers["furniture"] ?? "Balanced";
-$infraTier       = $moduleTiers["infra"] ?? "Balanced";
-$electronicsTier = $moduleTiers["electronics"] ?? "Balanced";
 
 // normalize size
 $sizeNorm = ucfirst(strtolower($size));
@@ -43,35 +36,78 @@ $labels = [
   "electronics" => "Electronic Devices"
 ];
 
-$baseWeights = [
-  "kitchen"     => 5,
-  "furniture"   => 3,
-  "pos"         => 2,
-  "electronics" => 2
-];
+function get_module_weights($restaurantType, $modules) {
+  $allWeights = [
+    "fast_food" => [
+      "kitchen"     => 6,
+      "pos"         => 3,
+      "furniture"   => 2,
+      "electronics" => 1,
+      "ambience"    => 0
+    ],
+    "standard_dining" => [
+      "kitchen"     => 5,
+      "furniture"   => 3,
+      "pos"         => 2,
+      "electronics" => 2,
+      "ambience"    => 1
+    ],
+    "premium_dining" => [
+      "kitchen"     => 4,
+      "furniture"   => 5,
+      "pos"         => 2,
+      "electronics" => 2,
+      "ambience"    => 2
+    ],
+    "cloud_kitchen" => [
+      "kitchen"     => 8,
+      "pos"         => 4,
+      "furniture"   => 0,
+      "electronics" => 0,
+      "ambience"    => 0
+    ]
+  ];
 
+  $weights = $allWeights[$restaurantType] ?? $allWeights["standard_dining"];
+
+  $result = [];
+  foreach ($modules as $m) {
+    if (isset($weights[$m]) && $weights[$m] > 0) {
+      $result[$m] = $weights[$m];
+    }
+  }
+  return $result;
+}
 
 /* ---------------- Allocate budget across selected modules ---------------- */
-$selectedWeights = [];
-$totalW = 0;
-foreach($modules as $m){
-  if(isset($baseWeights[$m])){
-    $selectedWeights[$m] = $baseWeights[$m];
-    $totalW += $baseWeights[$m];
-  }
-}
+$selectedWeights = get_module_weights($restaurantType, $modules);
+$totalW = array_sum($selectedWeights);
 
 $alloc = [];
 $sum = 0;
 $keys = array_keys($selectedWeights);
 $lastKey = end($keys);
 
-foreach($selectedWeights as $m=>$wgt){
+foreach($selectedWeights as $m => $wgt){
   $amount = (int)round($budget * ($wgt / $totalW));
   if($m === $lastKey) $amount = $budget - $sum;
   $alloc[$m] = $amount;
   $sum += $amount;
 }
+
+function derive_tier($moduleAlloc, $totalBudget) {
+  if ($totalBudget <= 0) return "Balanced";
+  $ratio = $moduleAlloc / $totalBudget;
+  if ($ratio >= 0.35) return "Premium";
+  if ($ratio >= 0.20) return "Balanced";
+  return "Starter";
+}
+
+$posTier         = derive_tier($alloc["pos"]         ?? 0, $budget);
+$kitchenTier     = derive_tier($alloc["kitchen"]     ?? 0, $budget);
+$furnitureTier   = derive_tier($alloc["furniture"]   ?? 0, $budget);
+$electronicsTier = derive_tier($alloc["electronics"] ?? 0, $budget);
+$infraTier       = "Balanced";
 
 $kitchenCap = $alloc["kitchen"] ?? 0;
 $posCap     = $alloc["pos"] ?? 0;
@@ -264,7 +300,7 @@ if (isset($conn) && $conn) {
     ];
 
     while ($row = pg_fetch_assoc($res)) {
-      $type = guess_pos_type($row["product_name"] ?? "");
+      $type = trim((string)($row["product_type"] ?? ""));
       if (!$type) continue;
 
       $POS_CATALOG_DB[$type][] = [
@@ -326,7 +362,7 @@ if (isset($conn) && $conn) {
     $count = 0;
 
     while ($row = pg_fetch_assoc($resK)) {
-      $type = guess_kitchen_type($row["product_name"] ?? "");
+      $type = trim((string)($row["product_type"] ?? ""));
       if (!$type) continue;
 
       $tmp[$type][] = [
@@ -398,12 +434,7 @@ ORDER BY p.priority ASC, p.price ASC;
 
     while ($row = pg_fetch_assoc($resF)) {
       $type = trim((string)($row["product_type"] ?? ""));
-
-if ($type === "") {
-  $type = guess_furniture_type($row["product_name"] ?? "");
-}
-
-if (!$type) continue;
+      if (!$type) continue;
 
 $tmp[$type][] = [
   "id"                => (string)$row["id"],

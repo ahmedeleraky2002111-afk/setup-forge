@@ -4891,3 +4891,80 @@ font-weight: 550 !important;
 .sf-step5-form .sf-btn-main{
   min-width: 140px;
 }
+
+/* ========================
+   BUDGET CARDS (step 5)
+======================== */
+
+.sf-budget-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  max-width: 720px;
+  margin: 32px auto 0;
+}
+
+.sf-budget-card{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 24px 22px;
+  border-radius: 18px;
+  border: 2px solid rgba(0,76,172,.12);
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 4px 16px rgba(0,45,98,.06);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.sf-budget-card:hover{
+  border-color: rgba(0,76,172,.35);
+  box-shadow: 0 8px 28px rgba(0,45,98,.12);
+  transform: translateY(-2px);
+}
+
+.sf-budget-card.is-selected{
+  border-color: #004cac;
+  background: linear-gradient(135deg, rgba(0,76,172,.06), rgba(0,153,148,.04));
+  box-shadow: 0 0 0 4px rgba(0,76,172,.10), 0 8px 28px rgba(0,45,98,.10);
+}
+
+.sf-budget-card.is-selected::after{
+  content: "\2713";
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #004cac;
+  color: #fff;
+  font-size: .88rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sf-budget-label{
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.sf-budget-sub{
+  font-size: .83rem;
+  font-weight: 500;
+  color: #667085;
+}
+
+@media (max-width: 600px){
+  .sf-budget-grid{
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+}
