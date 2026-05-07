@@ -4590,202 +4590,95 @@ font-weight: 550 !important;
 }
 
 /* =========================
-   STEP 6 — ADDITIONAL SERVICES (redesign)
+   STEP 6 & 7 — INSTALLATION + STAFFING
 ========================= */
-.sf6-wrapper{
-  max-width: 720px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+
+/* step label */
+.sf6-step-label{
+  font-size: .78rem;
+  font-weight: 600;
+  color: #185FA5;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 6px;
 }
 
-.sf6-section{
+/* --- 4-card grid (step 6) --- */
+.sf6-card-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.sf6-card{
+  padding: 16px;
+  border: 1.5px solid rgba(0,0,0,.12);
+  border-radius: 8px;
+  cursor: pointer;
   background: #fff;
-  border: 1px solid rgba(0,0,0,.10);
-  border-radius: 8px;
-  overflow: hidden;
+  transition: border-color .15s, background .15s;
+  user-select: none;
 }
 
-/* --- section header --- */
-.sf6-section-head{
+.sf6-card:hover{
+  border-color: #185FA5;
+}
+
+.sf6-card.selected{
+  border-color: #185FA5;
+  background: #f0f6ff;
+}
+
+.sf6-card-top{
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  padding: 18px 20px 16px;
-  border-bottom: 1px solid rgba(0,0,0,.07);
-  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-.sf6-head-left{
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  flex: 1;
-  min-width: 0;
+.sf6-card-icon{
+  font-size: 1.3rem;
+  color: #185FA5;
+  line-height: 1;
 }
 
-.sf6-head-icon{
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: #f0f4fa;
+.sf6-card-circle{
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid #d1d5db;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
-  color: #185FA5;
+  font-size: .75rem;
+  color: transparent;
+  transition: all .15s;
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
-.sf6-head-text{
-  min-width: 0;
+.sf6-card.selected .sf6-card-circle{
+  background: #185FA5;
+  border-color: #185FA5;
+  color: #fff;
 }
 
-.sf6-head-title-row{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+.sf6-card-name{
+  font-weight: 700;
+  font-size: .88rem;
+  color: #111;
   margin-bottom: 4px;
 }
 
-.sf6-head-title{
-  font-weight: 600;
-  font-size: 1rem;
-  color: #111;
-}
-
-.sf6-head-badge{
-  font-size: .72rem;
-  font-weight: 600;
-  color: #185FA5;
-  background: #e8f0fa;
-  border: 1px solid #c5d8f5;
-  border-radius: 4px;
-  padding: 2px 7px;
-  letter-spacing: .02em;
-  white-space: nowrap;
-}
-
-.sf6-head-desc{
-  margin: 0;
-  font-size: .82rem;
+.sf6-card-desc{
+  font-size: .77rem;
   color: #6c757d;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
-/* --- yes/no pill toggles --- */
-.sf6-pill-group{
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-  align-self: flex-start;
-  margin-top: 2px;
-}
-
-.sf6-pill{
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.12);
-  background: #fff;
-  font-size: .82rem;
-  font-weight: 500;
-  cursor: pointer;
-  color: #444;
-  transition: all .15s ease;
-  white-space: nowrap;
-}
-
-.sf6-pill:hover{
-  border-color: rgba(0,0,0,.22);
-}
-
-.sf6-pill-yes.active{
-  background: #1D9E75;
-  color: #fff;
-  border-color: #1D9E75;
-}
-
-.sf6-pill-no.active{
-  background: #e9ecef;
-  color: #333;
-  border-color: #ccc;
-}
-
-/* --- installation service grid --- */
-.sf6-install-grid{
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  padding: 16px 20px;
-}
-
-.sf6-install-card{
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid rgba(0,0,0,.10);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: border-color .15s, background .15s;
-  background: #fafafa;
-}
-
-.sf6-install-card:hover{
-  border-color: #185FA5;
-  background: #f5f8fd;
-}
-
-.sf6-install-card.selected{
-  border-color: #1D9E75;
-  background: #f0faf6;
-}
-
-.sf6-check-circle{
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid #d1d5db;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: .9rem;
-  color: transparent;
-  flex-shrink: 0;
-  transition: all .15s;
-}
-
-.sf6-install-card.selected .sf6-check-circle{
-  background: #1D9E75;
-  border-color: #1D9E75;
-  color: #fff;
-}
-
-.sf6-install-info{
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.sf6-install-name{
-  font-weight: 600;
-  font-size: .88rem;
-  color: #111;
-}
-
-.sf6-install-sub{
-  font-size: .75rem;
-  color: #6c757d;
-}
-
-.sf6-note{
-  margin: 0;
-  padding: 10px 20px 14px;
+/* --- info note --- */
+.sf6-info-note{
+  margin: 14px 0 0;
   font-size: .78rem;
   color: #6c757d;
   display: flex;
@@ -4793,22 +4686,58 @@ font-weight: 550 !important;
   gap: 6px;
 }
 
-/* --- staffing list --- */
-.sf6-staff-list{
-  display: flex;
-  flex-direction: column;
+/* --- footer bar (shared step 6 & 7) --- */
+.sf6-foot-summary{
+  font-size: .82rem;
+  color: #6c757d;
+  font-weight: 500;
+  margin: 18px 0 0;
 }
 
+.sf6-footer-bar{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+/* --- staff card wrapper (step 7) --- */
+.sf7-staff-card{
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 650px;
+  margin: 20px auto 0;
+  background: #fff;
+}
+
+/* --- staff rows --- */
 .sf6-staff-row{
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 20px;
+  padding: 14px 18px;
   border-bottom: 1px solid rgba(0,0,0,.06);
+  border-left: 3px solid transparent;
+  transition: border-left-color .15s, background .15s;
 }
 
 .sf6-staff-row:last-child{
   border-bottom: none;
+}
+
+.sf6-staff-row--active{
+  border-left-color: #185FA5;
+  background: #f7f9ff;
+}
+
+/* left group: icon + text, vertically centered */
+.sf6-staff-left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 
 .sf6-staff-icon{
@@ -4825,11 +4754,10 @@ font-weight: 550 !important;
 }
 
 .sf6-staff-info{
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .sf6-staff-name{
@@ -4843,11 +4771,10 @@ font-weight: 550 !important;
   color: #6c757d;
 }
 
-/* --- quantity counter --- */
+/* --- quantity counter (shared) --- */
 .sf6-qty-ctrl{
   display: flex;
   align-items: center;
-  gap: 0;
   flex-shrink: 0;
   border: 1px solid rgba(0,0,0,.12);
   border-radius: 6px;
@@ -4872,64 +4799,24 @@ font-weight: 550 !important;
 }
 
 .sf6-qty-btn:hover{
-  background: #e8e8e8;
+  background: #e4e4e4;
 }
 
 .sf6-qty-num{
-  min-width: 32px;
+  min-width: 34px;
   text-align: center;
   font-size: .9rem;
   font-weight: 600;
   color: #111;
-  padding: 0 4px;
+  padding: 0 2px;
   background: #fff;
-}
-
-/* --- footer summary + actions --- */
-.sf6-footer{
-  max-width: 720px;
-  margin: 20px auto 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.sf6-summary{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: .82rem;
-  color: #6c757d;
-}
-
-.sf6-dot{
-  color: #ccc;
-}
-
-.sf6-btn-continue{
-  background: #185FA5 !important;
-}
-
-.sf6-btn-continue:hover{
-  background: #1D9E75 !important;
+  line-height: 32px;
 }
 
 /* responsive */
 @media (max-width: 540px){
-  .sf6-install-grid{
-    grid-template-columns: 1fr;
-  }
-  .sf6-section-head{
-    flex-direction: column;
-  }
-  .sf6-pill-group{
-    width: 100%;
-  }
-  .sf6-pill{
-    flex: 1;
-    justify-content: center;
-    text-align: center;
-  }
+  .sf6-card-grid{ grid-template-columns: 1fr; }
+  .sf6-footer-bar{ flex-direction: column; align-items: flex-start; }
 }
 
 /* =========================
