@@ -1627,14 +1627,6 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
 
         <?php if ($activeModule === "pos"): ?>
           <div class="sf-module-shell">
-            <div class="sf-module-shell-head">
-              <div>
-                <div class="sf-module-shell-kicker">Module</div>
-                <h2 class="sf-module-shell-title">POS & Tech</h2>
-                <div class="sf-module-shell-sub">Auto-generated based on your selected setup and budget cap.</div>
-              </div>
-
-            </div>
             <div class="sf-pkg-progress-wrap">
               <div class="sf-pkg-progress-row">
                 <span class="sf-pkg-progress-label">POS &amp; Tech</span>
@@ -1698,7 +1690,6 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                           <button class="sf-pkg-qty-btn" <?= $type==="software" ? "disabled" : "" ?>>+</button>
                         </form>
                       </div>
-                      <div class="sf-pkg-line-total"><?= egp($it["qty"] * $it["unit"]) ?></div>
                     </div>
 
                     <?php if (!empty($it["alternatives"])): ?>
@@ -1811,14 +1802,7 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
 
         <?php elseif ($activeModule === "kitchen"): ?>
           <div class="sf-module-shell">
-            <div class="sf-module-shell-head">
-              <div>
-                <div class="sf-module-shell-kicker">Module</div>
-                <h2 class="sf-module-shell-title">Kitchen / Equipment</h2>
-                <div class="sf-module-shell-sub">Generated equipment package based on your selected tier and budget.</div>
-              </div>
-
-            </div>
+            
             <div class="sf-pkg-progress-wrap">
               <div class="sf-pkg-progress-row">
                 <span class="sf-pkg-progress-label">Kitchen / Equipment</span>
@@ -1882,7 +1866,6 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                           <button class="sf-pkg-qty-btn">+</button>
                         </form>
                       </div>
-                      <div class="sf-pkg-line-total"><?= egp($it["qty"] * $it["unit"]) ?></div>
                     </div>
 
                     <?php if (!empty($it["alternatives"])): ?>
@@ -1989,14 +1972,7 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
 
           <?php elseif ($activeModule === "furniture"): ?>
   <div class="sf-module-shell">
-    <div class="sf-module-shell-head">
-      <div>
-        <div class="sf-module-shell-kicker">Module</div>
-        <h2 class="sf-module-shell-title">Dining Area</h2>
-<div class="sf-module-shell-sub">Generated dining area package based on your selected tier and budget.</div>
-      </div>
-
-    </div>
+    
     <div class="sf-pkg-progress-wrap">
       <div class="sf-pkg-progress-row">
         <span class="sf-pkg-progress-label">Dining Area</span>
@@ -2060,7 +2036,6 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                   <button class="sf-pkg-qty-btn">+</button>
                 </form>
               </div>
-              <div class="sf-pkg-line-total"><?= egp($it["qty"] * $it["unit"]) ?></div>
             </div>
 
             <?php if (!empty($it["alternatives"])): ?>

@@ -470,46 +470,137 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
   <?php elseif ($step === 3): ?>
 
-<h1 class="sf-step3-title">How many seats?</h1>
-<p class="sf-step3-sub">Tell us your seating capacity so we can size your equipment and layout recommendations.</p>
+<div class="sf-step3-wrap">
+  <h1 class="sf-step3-title">How many seats?</h1>
+  <p class="sf-step3-sub">We'll use this to recommend the right furniture, equipment, and layout for your space.</p>
 
-<form method="post" class="sf-step3-form">
-  <input type="hidden" name="step" value="3">
+  <form method="post" class="sf-step3-form">
+    <input type="hidden" name="step" value="3">
 
-  <div class="sf-seats-grid">
+    <div class="sf-seat-cards-row">
 
-    <div class="sf-seats-field">
-      <label class="sf-seats-label" for="indoor_seats">Indoor Seats</label>
-      <input
-        class="sf-seats-input"
-        type="number"
-        id="indoor_seats"
-        name="indoor_seats"
-        min="1"
-        value="<?= $indoorSeats > 0 ? h($indoorSeats) : 1 ?>"
-        required
-      >
+      <!-- Indoor -->
+      <div class="sf-seat-card <?= ($indoorSeats > 0) ? 'is-active' : '' ?>" id="indoor-card">
+        <div class="sf-seat-card-head">
+          <div class="sf-seat-card-icon indoor">
+            <i class="bi bi-house-door-fill"></i>
+          </div>
+          <div class="sf-seat-card-title">Indoor</div>
+          <div class="sf-seat-card-hint">Dining room, bar &amp; lounge</div>
+        </div>
+
+        <div class="sf-seat-stepper">
+          <button type="button" class="sf-step-btn" data-field="indoor_seats" data-delta="-1">−</button>
+          <input type="number" class="sf-seat-num-input" name="indoor_seats" id="indoor_seats"
+                 min="1" value="<?= $indoorSeats > 0 ? h($indoorSeats) : 20 ?>" required>
+          <button type="button" class="sf-step-btn" data-field="indoor_seats" data-delta="1">+</button>
+        </div>
+
+        <div class="sf-seat-presets">
+          <?php foreach ([10, 20, 40, 60, 80, 100] as $p): ?>
+          <button type="button" class="sf-seat-preset" data-field="indoor_seats" data-val="<?= $p ?>"><?= $p ?></button>
+          <?php endforeach; ?>
+        </div>
+      </div>
+
+      <!-- Outdoor -->
+      <div class="sf-seat-card <?= ($outdoorSeats > 0) ? 'is-active' : '' ?>" id="outdoor-card">
+        <div class="sf-seat-card-head">
+          <div class="sf-seat-card-icon outdoor">
+            <i class="bi bi-sun-fill"></i>
+          </div>
+          <div class="sf-seat-card-title">Outdoor</div>
+          <div class="sf-seat-card-hint">Terrace, garden &amp; rooftop</div>
+        </div>
+
+        <div class="sf-seat-stepper">
+          <button type="button" class="sf-step-btn" data-field="outdoor_seats" data-delta="-1">−</button>
+          <input type="number" class="sf-seat-num-input" name="outdoor_seats" id="outdoor_seats"
+                 min="0" value="<?= h($outdoorSeats) ?>">
+          <button type="button" class="sf-step-btn" data-field="outdoor_seats" data-delta="1">+</button>
+        </div>
+
+        <div class="sf-seat-presets">
+          <?php foreach ([0, 10, 20, 30, 40, 60] as $p): ?>
+          <button type="button" class="sf-seat-preset" data-field="outdoor_seats" data-val="<?= $p ?>"><?= $p ?></button>
+          <?php endforeach; ?>
+        </div>
+      </div>
+
     </div>
 
-    <div class="sf-seats-field">
-      <label class="sf-seats-label" for="outdoor_seats">Outdoor Seats</label>
-      <input
-        class="sf-seats-input"
-        type="number"
-        id="outdoor_seats"
-        name="outdoor_seats"
-        min="0"
-        value="<?= h($outdoorSeats) ?>"
-      >
+    <!-- Total bar -->
+    <div class="sf-seat-total-bar">
+      <div class="sf-seat-total-number" id="total-seats"><?= max(1, $indoorSeats > 0 ? $indoorSeats : 20) + $outdoorSeats ?></div>
+      <div class="sf-seat-total-text">total seats</div>
+      <div class="sf-seat-total-size" id="size-label"></div>
     </div>
 
-  </div>
+    <div class="sf-actions">
+      <a class="sf-btn-main sf-btn-back" href="setup.php?step=<?= $business === 'Restaurant' ? '2' : '1' ?>">← Back</a>
+      <button class="sf-btn-main sf-btn-next" type="submit">Next →</button>
+    </div>
+  </form>
+</div>
 
-  <div class="sf-actions">
-    <a class="sf-btn-main sf-btn-back" href="setup.php?step=2">← Back</a>
-    <button class="sf-btn-main sf-btn-next" type="submit">Next →</button>
-  </div>
-</form>
+<script>
+(function(){
+  const inputs = {
+    indoor_seats:  document.getElementById('indoor_seats'),
+    outdoor_seats: document.getElementById('outdoor_seats'),
+  };
+  const totalEl = document.getElementById('total-seats');
+  const sizeEl  = document.getElementById('size-label');
+
+  function getMin(field){ return field === 'indoor_seats' ? 1 : 0; }
+
+  function updateTotal(){
+    const indoor  = parseInt(inputs.indoor_seats.value)  || 0;
+    const outdoor = parseInt(inputs.outdoor_seats.value) || 0;
+    const total   = indoor + outdoor;
+    totalEl.textContent = total;
+
+    if      (total <= 20)  sizeEl.textContent = 'Small café-style space';
+    else if (total <= 50)  sizeEl.textContent = 'Mid-size restaurant';
+    else if (total <= 100) sizeEl.textContent = 'Large restaurant';
+    else                   sizeEl.textContent = 'Venue-scale setup';
+
+    document.querySelectorAll('.sf-seat-preset').forEach(btn => {
+      btn.classList.toggle('is-active', parseInt(inputs[btn.dataset.field].value) === parseInt(btn.dataset.val));
+    });
+
+    document.getElementById('indoor-card').classList.toggle('is-active',  indoor  > 0);
+    document.getElementById('outdoor-card').classList.toggle('is-active', outdoor > 0);
+  }
+
+  document.querySelectorAll('.sf-step-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = inputs[btn.dataset.field];
+      const min   = getMin(btn.dataset.field);
+      input.value = Math.max(min, (parseInt(input.value) || 0) + parseInt(btn.dataset.delta));
+      updateTotal();
+    });
+  });
+
+  document.querySelectorAll('.sf-seat-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      inputs[btn.dataset.field].value = Math.max(getMin(btn.dataset.field), parseInt(btn.dataset.val));
+      updateTotal();
+    });
+  });
+
+  Object.entries(inputs).forEach(([field, input]) => {
+    input.addEventListener('input', updateTotal);
+    input.addEventListener('change', () => {
+      if ((parseInt(input.value) || 0) < getMin(field)) input.value = getMin(field);
+      updateTotal();
+    });
+  });
+
+  updateTotal();
+})();
+</script>
+
 <?php elseif ($step === 6): ?>
 
 <h1 class="sf-step-title">Additional Services</h1>
