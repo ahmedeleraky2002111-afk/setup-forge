@@ -133,7 +133,7 @@ file_put_contents(__DIR__ . "/callback_debug.txt", print_r([
   "payment_status_before" => $order["payment_status"] ?? null,
   "business_user_id" => $order["business_user_id"] ?? null,
   "labor_data" => $order["labor_data"] ?? null,
-  "technician_data" => $order["technician_data"] ?? null,
+"installation_data" => $order["installation_data"] ?? null,
   "txn_order_id" => $obj["order"]["id"] ?? null,
   "merchant_order_id" => $obj["order"]["merchant_order_id"] ?? null,
   "amount_cents" => $obj["amount_cents"] ?? null,
@@ -328,35 +328,29 @@ try {
         }
       }
 
-      $technicians = json_decode($order["technician_data"] ?? "[]", true);
+      $installationServices = json_decode($order["installation_data"] ?? "[]", true);
 
-if (is_array($technicians) && !empty($technicians)) {
-  $insTechSql = "
-    INSERT INTO jobs
-    (business_id, title, description, location, budget, status, price, worker_id, job_type)
-    VALUES ($1, $2, $3, $4, $5, 'available', $6, $7, 'technician')
+if (is_array($installationServices) && !empty($installationServices) && $businessId !== null) {
+  $insInstallationSql = "
+    INSERT INTO installation_requests
+    (user_id, services, status, company_id, total_price)
+    VALUES ($1, $2, $3, $4, $5)
   ";
 
-  foreach ($technicians as $service) {
+  foreach ($installationServices as $service) {
     $service = trim((string)$service);
     if ($service === "") continue;
 
-    $label = ucwords(str_replace(["_", "-"], " ", $service));
-    $title = $label . " Service";
-    $description = $label . " requested during setup (Order #{$orderId}).";
-
-    $okTech = pg_query_params($conn, $insTechSql, [
+    $okInstallation = pg_query_params($conn, $insInstallationSql, [
       $businessId,
-      $title,
-      $description,
-      $jobLocation,
-      0,
-      0,
-      null
+      "{" . $service . "}",
+      "pending",
+      null,
+      0
     ]);
 
-    if (!$okTech) {
-      throw new Exception("Insert technician job failed: " . pg_last_error($conn));
+    if (!$okInstallation) {
+      throw new Exception("Insert installation request failed: " . pg_last_error($conn));
     }
   }
 }
