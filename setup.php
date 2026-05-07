@@ -176,7 +176,7 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   <title>SetupForge - Setup</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/style.css?v=6" rel="stylesheet">
+  <link href="assets/style.css?v=7" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
@@ -604,73 +604,234 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 <?php elseif ($step === 6): ?>
 
 <h1 class="sf-step-title">Additional Services</h1>
-<p class="sf-step-sub">
-  Choose any extra help you need for setup and daily operations.
-</p>
+<p class="sf-step-sub">Choose any extra help you need for setup and daily operations.</p>
 
-<form method="post">
+<form method="post" id="sf6-form">
 <input type="hidden" name="step" value="6">
 
-<div class="sf-services-wrapper">
+<div class="sf6-wrapper">
 
-  <!-- 🔧 INSTALLATION -->
-  <div class="sf-service-card">
-
-    <div class="sf-service-top">
-      <div>
-        <div class="sf-service-title">Installation Services</div>
-        <div class="sf-service-sub">Setup equipment and technical systems</div>
+  <!-- SECTION 1: Installation & Technical Setup -->
+  <div class="sf6-section">
+    <div class="sf6-section-head">
+      <div class="sf6-head-left">
+        <div class="sf6-head-icon">
+          <i class="bi bi-tools"></i>
+        </div>
+        <div class="sf6-head-text">
+          <div class="sf6-head-title-row">
+            <span class="sf6-head-title">Installation &amp; Technical Setup</span>
+            <span class="sf6-head-badge">Hired companies</span>
+          </div>
+          <p class="sf6-head-desc">Professional companies that come to your location and set up equipment for you</p>
+        </div>
       </div>
-
-      <div class="sf-toggle-group">
-        <button type="button" class="sf-toggle active" data-target="installation">Yes</button>
-        <button type="button" class="sf-toggle" data-target="installation">No</button>
+      <div class="sf6-pill-group">
+        <button type="button" class="sf6-pill sf6-pill-yes active" data-target="installation" data-value="yes">Yes, include</button>
+        <button type="button" class="sf6-pill sf6-pill-no" data-target="installation" data-value="no">No thanks</button>
         <input type="hidden" name="installation_needed" id="installation_input" value="yes">
       </div>
     </div>
 
-    <div class="sf-service-options" id="installation_options">
-      <label><input type="checkbox" name="installation_services[]" value="pos"> POS Setup</label>
-      <label><input type="checkbox" name="installation_services[]" value="electrical"> Electrical Setup</label>
-      <label><input type="checkbox" name="installation_services[]" value="network"> Network Setup</label>
-      <label><input type="checkbox" name="installation_services[]" value="ac"> AC Installation</label>
+    <div class="sf6-install-grid" id="installation_options">
+      <div class="sf6-install-card" data-service="pos">
+        <div class="sf6-check-circle"><i class="bi bi-check2"></i></div>
+        <div class="sf6-install-info">
+          <span class="sf6-install-name">POS System</span>
+          <span class="sf6-install-sub">Point of sale terminal &amp; software</span>
+        </div>
+        <input type="checkbox" name="installation_services[]" value="pos" class="sf6-svc-chk" hidden>
+      </div>
+      <div class="sf6-install-card" data-service="electrical">
+        <div class="sf6-check-circle"><i class="bi bi-check2"></i></div>
+        <div class="sf6-install-info">
+          <span class="sf6-install-name">Electrical Wiring</span>
+          <span class="sf6-install-sub">Power outlets, lighting &amp; wiring</span>
+        </div>
+        <input type="checkbox" name="installation_services[]" value="electrical" class="sf6-svc-chk" hidden>
+      </div>
+      <div class="sf6-install-card" data-service="network">
+        <div class="sf6-check-circle"><i class="bi bi-check2"></i></div>
+        <div class="sf6-install-info">
+          <span class="sf6-install-name">Network &amp; WiFi</span>
+          <span class="sf6-install-sub">Internet, cabling &amp; router setup</span>
+        </div>
+        <input type="checkbox" name="installation_services[]" value="network" class="sf6-svc-chk" hidden>
+      </div>
+      <div class="sf6-install-card" data-service="ac">
+        <div class="sf6-check-circle"><i class="bi bi-check2"></i></div>
+        <div class="sf6-install-info">
+          <span class="sf6-install-name">AC Installation</span>
+          <span class="sf6-install-sub">Air conditioning units &amp; ducts</span>
+        </div>
+        <input type="checkbox" name="installation_services[]" value="ac" class="sf6-svc-chk" hidden>
+      </div>
     </div>
 
+    <p class="sf6-note"><i class="bi bi-info-circle"></i> These services are provided by verified local companies, not individual workers.</p>
   </div>
 
-  <!-- 👷 STAFF -->
-  <div class="sf-service-card">
-
-    <div class="sf-service-top">
-      <div>
-        <div class="sf-service-title">Staffing</div>
-        <div class="sf-service-sub">Hire workers for daily operations</div>
+  <!-- SECTION 2: Staffing -->
+  <div class="sf6-section">
+    <div class="sf6-section-head">
+      <div class="sf6-head-left">
+        <div class="sf6-head-icon">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="sf6-head-text">
+          <div class="sf6-head-title-row">
+            <span class="sf6-head-title">Staffing</span>
+          </div>
+          <p class="sf6-head-desc">We help you hire the right number of staff for your restaurant's daily operations</p>
+        </div>
       </div>
-
-      <div class="sf-toggle-group">
-        <button type="button" class="sf-toggle" data-target="staff">Yes</button>
-        <button type="button" class="sf-toggle active" data-target="staff">No</button>
+      <div class="sf6-pill-group">
+        <button type="button" class="sf6-pill sf6-pill-yes" data-target="staff" data-value="yes">Yes, include</button>
+        <button type="button" class="sf6-pill sf6-pill-no active" data-target="staff" data-value="no">No thanks</button>
         <input type="hidden" name="staffing_needed" id="staff_input" value="no">
       </div>
     </div>
 
-    <div class="sf-service-options hidden" id="staff_options">
-      <label><input type="checkbox" name="staff_roles[]" value="waiter"> Waiters</label>
-      <label><input type="checkbox" name="staff_roles[]" value="chef"> Chefs</label>
-      <label><input type="checkbox" name="staff_roles[]" value="cashier"> Cashiers</label>
-      <label><input type="checkbox" name="staff_roles[]" value="cleaner"> Cleaners</label>
+    <div class="sf6-staff-list hidden" id="staff_options">
+      <div class="sf6-staff-row">
+        <div class="sf6-staff-icon"><i class="bi bi-person"></i></div>
+        <div class="sf6-staff-info">
+          <span class="sf6-staff-name">Waiters</span>
+          <span class="sf6-staff-role">Serve food and assist customers at tables</span>
+        </div>
+        <div class="sf6-qty-ctrl">
+          <button type="button" class="sf6-qty-btn" data-action="minus" data-role="waiter">−</button>
+          <span class="sf6-qty-num" id="qty_waiter">0</span>
+          <button type="button" class="sf6-qty-btn" data-action="plus" data-role="waiter">+</button>
+        </div>
+        <input type="checkbox" name="staff_roles[]" value="waiter" id="chk_waiter" hidden>
+      </div>
+      <div class="sf6-staff-row">
+        <div class="sf6-staff-icon"><i class="bi bi-fire"></i></div>
+        <div class="sf6-staff-info">
+          <span class="sf6-staff-name">Chefs</span>
+          <span class="sf6-staff-role">Prepare and cook menu items</span>
+        </div>
+        <div class="sf6-qty-ctrl">
+          <button type="button" class="sf6-qty-btn" data-action="minus" data-role="chef">−</button>
+          <span class="sf6-qty-num" id="qty_chef">0</span>
+          <button type="button" class="sf6-qty-btn" data-action="plus" data-role="chef">+</button>
+        </div>
+        <input type="checkbox" name="staff_roles[]" value="chef" id="chk_chef" hidden>
+      </div>
+      <div class="sf6-staff-row">
+        <div class="sf6-staff-icon"><i class="bi bi-cash"></i></div>
+        <div class="sf6-staff-info">
+          <span class="sf6-staff-name">Cashiers</span>
+          <span class="sf6-staff-role">Handle payments and billing</span>
+        </div>
+        <div class="sf6-qty-ctrl">
+          <button type="button" class="sf6-qty-btn" data-action="minus" data-role="cashier">−</button>
+          <span class="sf6-qty-num" id="qty_cashier">0</span>
+          <button type="button" class="sf6-qty-btn" data-action="plus" data-role="cashier">+</button>
+        </div>
+        <input type="checkbox" name="staff_roles[]" value="cashier" id="chk_cashier" hidden>
+      </div>
+      <div class="sf6-staff-row">
+        <div class="sf6-staff-icon"><i class="bi bi-shield"></i></div>
+        <div class="sf6-staff-info">
+          <span class="sf6-staff-name">Security</span>
+          <span class="sf6-staff-role">Monitor premises and ensure safety</span>
+        </div>
+        <div class="sf6-qty-ctrl">
+          <button type="button" class="sf6-qty-btn" data-action="minus" data-role="security">−</button>
+          <span class="sf6-qty-num" id="qty_security">0</span>
+          <button type="button" class="sf6-qty-btn" data-action="plus" data-role="security">+</button>
+        </div>
+        <input type="checkbox" name="staff_roles[]" value="security" id="chk_security" hidden>
+      </div>
+      <div class="sf6-staff-row">
+        <div class="sf6-staff-icon"><i class="bi bi-wrench"></i></div>
+        <div class="sf6-staff-info">
+          <span class="sf6-staff-name">Kitchen Helpers</span>
+          <span class="sf6-staff-role">Assist chefs and clean prep areas</span>
+        </div>
+        <div class="sf6-qty-ctrl">
+          <button type="button" class="sf6-qty-btn" data-action="minus" data-role="kitchen_helper">−</button>
+          <span class="sf6-qty-num" id="qty_kitchen_helper">0</span>
+          <button type="button" class="sf6-qty-btn" data-action="plus" data-role="kitchen_helper">+</button>
+        </div>
+        <input type="checkbox" name="staff_roles[]" value="kitchen_helper" id="chk_kitchen_helper" hidden>
+      </div>
     </div>
-
   </div>
 
 </div>
 
-<div class="sf-actions">
-  <a class="sf-btn-main sf-btn-back" href="setup.php?step=5">← Back</a>
-  <button class="sf-btn-main sf-btn-next" type="submit">Finish →</button>
+<div class="sf6-footer">
+  <div class="sf6-summary">
+    <span id="sf6-install-summary">0 installation services selected</span>
+    <span class="sf6-dot">·</span>
+    <span id="sf6-staff-summary">0 staff total</span>
+  </div>
+  <div class="sf-actions" style="margin-top:0">
+    <a class="sf-btn-main sf-btn-back" href="setup.php?step=5">← Back</a>
+    <button class="sf-btn-main sf-btn-next sf6-btn-continue" type="submit">Continue →</button>
+  </div>
 </div>
 
 </form>
+
+<script>
+(function(){
+  var qtyCounts = { waiter:0, chef:0, cashier:0, security:0, kitchen_helper:0 };
+
+  /* --- section toggles --- */
+  document.querySelectorAll('.sf6-pill').forEach(function(pill){
+    pill.addEventListener('click', function(){
+      var target = pill.dataset.target;
+      document.querySelectorAll('.sf6-pill[data-target="'+target+'"]').forEach(function(p){ p.classList.remove('active'); });
+      pill.classList.add('active');
+      var val = pill.dataset.value;
+      if(target === 'installation'){
+        document.getElementById('installation_input').value = val;
+        document.getElementById('installation_options').classList.toggle('hidden', val === 'no');
+      } else {
+        document.getElementById('staff_input').value = val;
+        document.getElementById('staff_options').classList.toggle('hidden', val === 'no');
+      }
+      updateSummary();
+    });
+  });
+
+  /* --- installation service cards --- */
+  document.querySelectorAll('.sf6-install-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      card.classList.toggle('selected');
+      card.querySelector('.sf6-svc-chk').checked = card.classList.contains('selected');
+      updateSummary();
+    });
+  });
+
+  /* --- staff quantity counters --- */
+  document.querySelectorAll('.sf6-qty-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var role = btn.dataset.role;
+      if(btn.dataset.action === 'plus') qtyCounts[role]++;
+      else if(qtyCounts[role] > 0) qtyCounts[role]--;
+      document.getElementById('qty_'+role).textContent = qtyCounts[role];
+      document.getElementById('chk_'+role).checked = qtyCounts[role] > 0;
+      updateSummary();
+    });
+  });
+
+  /* --- summary bar --- */
+  function updateSummary(){
+    var installCount = document.querySelectorAll('.sf6-install-card.selected').length;
+    var totalStaff = Object.keys(qtyCounts).reduce(function(s,k){ return s + qtyCounts[k]; }, 0);
+    document.getElementById('sf6-install-summary').textContent =
+      installCount + ' installation service' + (installCount !== 1 ? 's' : '') + ' selected';
+    document.getElementById('sf6-staff-summary').textContent = totalStaff + ' staff total';
+  }
+
+  updateSummary();
+})();
+</script>
 
 <?php elseif ($step === 5): ?>
 
@@ -776,26 +937,6 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
   </div>
 </main>
-<script>
-document.querySelectorAll('.sf-toggle').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const target = btn.dataset.target;
-
-    if(target === "installation"){
-      document.getElementById("installation_input").value = btn.innerText.toLowerCase();
-      document.getElementById("installation_options").classList.toggle("hidden", btn.innerText === "No");
-    }
-
-    if(target === "staff"){
-      document.getElementById("staff_input").value = btn.innerText.toLowerCase();
-      document.getElementById("staff_options").classList.toggle("hidden", btn.innerText === "No");
-    }
-
-    btn.parentElement.querySelectorAll('.sf-toggle').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  });
-});
-</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="assets/site.js"></script>
 </body>
