@@ -8,6 +8,29 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 $orderId = (int)($_GET["order_id"] ?? 0);
+
+/*
+  Safety check:
+  Sometimes Paymob/browser can land on failed page even after callback marked order as paid.
+  If DB says paid, send user to success page.
+*/
+if ($orderId > 0) {
+  $checkPaid = pg_query_params($conn, "
+    SELECT payment_status
+    FROM orders
+    WHERE id = $1
+    LIMIT 1
+  ", [$orderId]);
+
+  if ($checkPaid && pg_num_rows($checkPaid) > 0) {
+    $order = pg_fetch_assoc($checkPaid);
+
+    if (($order["payment_status"] ?? "") === "paid") {
+      header("Location: success.php?order_id=" . urlencode((string)$orderId));
+      exit;
+    }
+  }
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -16,7 +39,7 @@ $orderId = (int)($_GET["order_id"] ?? 0);
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SetupForge - Payment Failed</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="../assets/style.css" rel="stylesheet">
+  <link href="../assets/style.css" rel="stylesheet">
 </head>
 <body>
 <?php include "../includes/navbar.php"; ?>
