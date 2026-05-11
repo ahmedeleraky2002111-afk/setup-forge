@@ -14,11 +14,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   $currentStep = (int)($_POST["step"] ?? 1);
   // ✅ ADD THIS HERE
   if ($currentStep === 0) {
-
+    // Fresh wizard — clear all old wizard data
+    $_SESSION["wizard"] = [];
     $_SESSION["wizard"]["business_name"] = trim($_POST["business_name"] ?? "");
-
     redirect_step(1);
-  }
+}
   if ($currentStep === 1) {
 
   $selectedBusiness = $_POST["business_type"] ?? null;
@@ -91,21 +91,14 @@ if ($currentStep === 6) {
     ? $installationServices
     : [];
 
-  $_SESSION["wizard"]["labor"] = [
-    "barista" => in_array("barista", $staffRoles, true) ? 1 : 0,
-    "cashier" => in_array("cashier", $staffRoles, true) ? 1 : 0,
-    "waiter"  => in_array("waiter",  $staffRoles, true) ? 1 : 0,
-    "chef"    => in_array("chef",    $staffRoles, true) ? 1 : 0,
-    "cleaner" => in_array("cleaner", $staffRoles, true) ? 1 : 0
-  ];
-  $_SESSION["wizard"]["salary_amount"]     = (int)($_POST["salary_amount"] ?? 0);
-  $_SESSION["wizard"]["compensation_type"] = trim($_POST["compensation_type"] ?? "monthly");
+  
 
   redirect_step(7);
 
 }
 
 if ($currentStep === 7) {
+  file_put_contents(__DIR__ . "/wizard_debug.txt", print_r($_POST, true) . "\n---\n", FILE_APPEND);
 
   $staffingNeeded = $_POST["staffing_needed"] ?? "no";
   $staffRoles     = $_POST["staff_roles"] ?? [];
@@ -774,9 +767,10 @@ function getMin(field){
       <span class="sf6-qty-num" id="qty_waiter">0</span>
       <button type="button" class="sf6-qty-btn" data-action="plus" data-role="waiter">+</button>
     </div>
-    <input type="number" name="waiter_count" id="input_waiter" value="0" min="0" hidden>
+    <input type="number" name="waiter_count" id="input_waiter" value="<?= (int)($w['waiter_count'] ?? 0) ?>" min="0" hidden>
     <input type="checkbox" name="staff_roles[]" value="waiter" id="chk_waiter" hidden>
   </div>
+
   <div class="sf6-staff-row" id="row_chef">
     <div class="sf6-staff-left">
       <div class="sf6-staff-icon"><i class="bi bi-fire"></i></div>
@@ -790,9 +784,10 @@ function getMin(field){
       <span class="sf6-qty-num" id="qty_chef">0</span>
       <button type="button" class="sf6-qty-btn" data-action="plus" data-role="chef">+</button>
     </div>
-    <input type="number" name="chef_count" id="input_chef" value="0" min="0" hidden>
+    <input type="number" name="chef_count" id="input_chef" value="<?= (int)($w['chef_count'] ?? 0) ?>" min="0" hidden>
     <input type="checkbox" name="staff_roles[]" value="chef" id="chk_chef" hidden>
   </div>
+
   <div class="sf6-staff-row" id="row_cashier">
     <div class="sf6-staff-left">
       <div class="sf6-staff-icon"><i class="bi bi-cash"></i></div>
@@ -806,9 +801,10 @@ function getMin(field){
       <span class="sf6-qty-num" id="qty_cashier">0</span>
       <button type="button" class="sf6-qty-btn" data-action="plus" data-role="cashier">+</button>
     </div>
-    <input type="number" name="cashier_count" id="input_cashier" value="0" min="0" hidden>
+    <input type="number" name="cashier_count" id="input_cashier" value="<?= (int)($w['cashier_count'] ?? 0) ?>" min="0" hidden>
     <input type="checkbox" name="staff_roles[]" value="cashier" id="chk_cashier" hidden>
   </div>
+
   <div class="sf6-staff-row" id="row_security">
     <div class="sf6-staff-left">
       <div class="sf6-staff-icon"><i class="bi bi-shield"></i></div>
@@ -822,9 +818,10 @@ function getMin(field){
       <span class="sf6-qty-num" id="qty_security">0</span>
       <button type="button" class="sf6-qty-btn" data-action="plus" data-role="security">+</button>
     </div>
-    <input type="number" name="security_count" id="input_security" value="0" min="0" hidden>
+    <input type="number" name="security_count" id="input_security" value="<?= (int)($w['security_count'] ?? 0) ?>" min="0" hidden>
     <input type="checkbox" name="staff_roles[]" value="security" id="chk_security" hidden>
   </div>
+
   <div class="sf6-staff-row" id="row_kitchen_helper">
     <div class="sf6-staff-left">
       <div class="sf6-staff-icon"><i class="bi bi-wrench"></i></div>
@@ -838,7 +835,7 @@ function getMin(field){
       <span class="sf6-qty-num" id="qty_kitchen_helper">0</span>
       <button type="button" class="sf6-qty-btn" data-action="plus" data-role="kitchen_helper">+</button>
     </div>
-    <input type="number" name="kitchen_helper_count" id="input_kitchen_helper" value="0" min="0" hidden>
+    <input type="number" name="kitchen_helper_count" id="input_kitchen_helper" value="<?= (int)($w['kitchen_helper_count'] ?? 0) ?>" min="0" hidden>
     <input type="checkbox" name="staff_roles[]" value="kitchen_helper" id="chk_kitchen_helper" hidden>
   </div>
 </div>
@@ -853,7 +850,22 @@ function getMin(field){
 
 <script>
 (function(){
-  var counts = { waiter:0, chef:0, cashier:0, security:0, kitchen_helper:0 };
+  var counts = {
+    waiter:         parseInt(document.getElementById('input_waiter').value)         || 0,
+    chef:           parseInt(document.getElementById('input_chef').value)           || 0,
+    cashier:        parseInt(document.getElementById('input_cashier').value)        || 0,
+    security:       parseInt(document.getElementById('input_security').value)       || 0,
+    kitchen_helper: parseInt(document.getElementById('input_kitchen_helper').value) || 0
+  };
+
+  Object.keys(counts).forEach(function(role){
+    document.getElementById('qty_' + role).textContent = counts[role];
+    document.getElementById('chk_' + role).checked = counts[role] > 0;
+    var row = document.getElementById('row_' + role);
+    if(row) row.classList.toggle('sf6-staff-row--active', counts[role] > 0);
+  });
+  var total = Object.keys(counts).reduce(function(s,k){ return s + counts[k]; }, 0);
+  document.getElementById('sf7-count-text').textContent = total + ' staff total';
 
   document.querySelectorAll('#sf7-form .sf6-qty-btn').forEach(function(btn){
     btn.addEventListener('click', function(){

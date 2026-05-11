@@ -1,0 +1,711 @@
+Array
+(
+    [step] => 7
+    [staffing_needed] => yes
+    [waiter_count] => 2
+    [chef_count] => 0
+    [cashier_count] => 0
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+    [staff_roles] => Array
+        (
+            [0] => waiter
+            [1] => chef
+            [2] => cashier
+        )
+
+)
+
+---
+Array
+(
+    [step] => 7
+    [staffing_needed] => yes
+    [waiter_count] => 2
+    [chef_count] => 0
+    [cashier_count] => 0
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+    [staff_roles] => Array
+        (
+            [0] => waiter
+            [1] => chef
+            [2] => cashier
+            [3] => security
+        )
+
+)
+
+---
+Array
+(
+    [step] => 7
+    [staffing_needed] => yes
+    [waiter_count] => 4
+    [staff_roles] => Array
+        (
+            [0] => waiter
+            [1] => chef
+            [2] => cashier
+        )
+
+    [chef_count] => 1
+    [cashier_count] => 1
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+)
+
+---
+Array
+(
+    [step] => 7
+    [staffing_needed] => yes
+    [waiter_count] => 5
+    [staff_roles] => Array
+        (
+            [0] => waiter
+            [1] => chef
+            [2] => cashier
+        )
+
+    [chef_count] => 2
+    [cashier_count] => 1
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+)
+
+---
+Array
+(
+    [step] => 7
+    [staffing_needed] => yes
+    [waiter_count] => 5
+    [staff_roles] => Array
+        (
+            [0] => waiter
+            [1] => chef
+            [2] => cashier
+        )
+
+    [chef_count] => 2
+    [cashier_count] => 3
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+)
+
+---
+place_order session: Array
+(
+    [business_name] => a
+    [business_type] => Restaurant
+    [restaurant_type] => fast_food
+    [indoor_seats] => 20
+    [outdoor_seats] => 0
+    [area_sqm] => 30
+    [modules] => Array
+        (
+            [0] => kitchen
+            [1] => pos
+            [2] => furniture
+            [3] => electronics
+        )
+
+    [budget] => 250000
+    [installation_needed] => yes
+    [installation_services] => Array
+        (
+            [0] => ac
+        )
+
+    [staffing_needed] => yes
+    [staff_roles] => Array
+        (
+            [0] => waiter
+        )
+
+    [technicians] => Array
+        (
+            [0] => ac
+        )
+
+    [labor] => Array
+        (
+            [barista] => 0
+            [cashier] => 0
+            [waiter] => 3
+            [chef] => 0
+            [cleaner] => 0
+            [security] => 0
+            [kitchen_helper] => 0
+        )
+
+    [waiter_count] => 3
+    [chef_count] => 0
+    [cashier_count] => 0
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+    [pos_cart_tier] => Balanced
+    [kitchen_cart_tier] => Premium
+    [furniture_cart_tier] => Starter
+    [pos_cart] => Array
+        (
+            [items] => Array
+                (
+                    [terminal] => Array
+                        (
+                            [product_name] => PartnerTech POS Touch Terminal 15"
+                            [brand] => PartnerTech
+                            [tier] => Balanced
+                            [module] => pos
+                            [category_id] => 
+                            [type] => terminal
+                            [product_id] => 2
+                            [name] => PartnerTech POS Touch Terminal 15"
+                            [unit] => 17999
+                            [qty] => 1
+                            [image_url] => assets/images/PartnerTech POS Touch Terminal 15.png
+                            [vendor_name] => Partner Tech Middle East (POS)
+                            [product_group_key] => 
+                            [vendor_user_id] => 20
+                            [alternatives] => Array
+                                (
+                                )
+
+                        )
+
+                    [printer] => Array
+                        (
+                            [product_name] => Epson TM-T88VI Receipt Printer
+                            [brand] => Epson
+                            [tier] => Balanced
+                            [module] => pos
+                            [category_id] => 
+                            [type] => printer
+                            [product_id] => 4
+                            [name] => Epson TM-T88VI Receipt Printer
+                            [unit] => 6999
+                            [qty] => 1
+                            [image_url] => assets/images/Epson TM-T88VI Receipt Printer.png
+                            [vendor_name] => Gargour Technologies (POS)
+                            [product_group_key] => 
+                            [vendor_user_id] => 19
+                            [alternatives] => Array
+                                (
+                                )
+
+                        )
+
+                )
+
+        )
+
+    [kitchen_cart] => Array
+        (
+            [items] => Array
+                (
+                )
+
+        )
+
+    [furniture_cart] => Array
+        (
+            [items] => Array
+                (
+                    [tv] => Array
+                        (
+                            [type] => tv
+                            [product_id] => 16
+                            [name] => LG UHD TV 43"
+                            [unit] => 17999
+                            [qty] => 1
+                            [image_url] => assets/images/lguhd.png
+                            [brand] => LG
+                            [vendor_name] => ELARABY Group
+                            [product_name] => LG UHD TV 43"
+                            [tier] => starter
+                            [module] => furniture
+                            [category_id] => 11
+                            [product_group_key] => 
+                            [vendor_user_id] => 18
+                            [stock_quantity] => 9
+                            [specs] => Array
+                                (
+                                    [screen_size] => 43
+                                )
+
+                            [alternatives] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [id] => 13
+                                            [name] => Samsung Crystal UHD TV 43"
+                                            [brand] => Samsung
+                                            [tier] => starter
+                                            [vendor_name] => B.TECH
+                                            [category_name] => Electronics
+                                            [category_id] => 11
+                                            [price] => 18999
+                                            [image_url] => assets/images/samsungscreen43.png
+                                            [vendor_user_id] => 17
+                                            [product_group_key] => 
+                                            [created_at] => 2026-02-25 23:12:50.381654+02
+                                            [stock_quantity] => 10
+                                            [specs] => Array
+                                                (
+                                                    [screen_size] => 43
+                                                )
+
+                                        )
+
+                                )
+
+                        )
+
+                )
+
+        )
+
+    [ac_units] => 1
+    [ac_tonnage] => 2
+    [ac_rate] => 750
+)
+
+---
+Array
+(
+    [step] => 7
+    [staffing_needed] => yes
+    [waiter_count] => 5
+    [staff_roles] => Array
+        (
+            [0] => waiter
+            [1] => chef
+            [2] => cashier
+        )
+
+    [chef_count] => 2
+    [cashier_count] => 4
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+)
+
+---
+place_order session: Array
+(
+    [business_name] => iubdv
+    [business_type] => Restaurant
+    [restaurant_type] => standard_dining
+    [indoor_seats] => 20
+    [outdoor_seats] => 0
+    [area_sqm] => 50
+    [modules] => Array
+        (
+            [0] => kitchen
+            [1] => pos
+            [2] => furniture
+            [3] => electronics
+        )
+
+    [budget] => 4000000
+    [installation_needed] => yes
+    [installation_services] => Array
+        (
+            [0] => pos
+            [1] => network
+            [2] => ac
+        )
+
+    [staffing_needed] => yes
+    [staff_roles] => Array
+        (
+            [0] => waiter
+            [1] => chef
+            [2] => cashier
+        )
+
+    [technicians] => Array
+        (
+            [0] => pos
+            [1] => network
+            [2] => ac
+        )
+
+    [labor] => Array
+        (
+            [barista] => 0
+            [cashier] => 4
+            [waiter] => 5
+            [chef] => 2
+            [cleaner] => 0
+            [security] => 0
+            [kitchen_helper] => 0
+        )
+
+    [salary_amount] => 0
+    [compensation_type] => monthly
+    [waiter_count] => 5
+    [chef_count] => 2
+    [cashier_count] => 4
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+    [pos_cart_tier] => Starter
+    [kitchen_cart_tier] => Premium
+    [furniture_cart_tier] => Balanced
+    [pos_cart] => Array
+        (
+            [items] => Array
+                (
+                    [terminal] => Array
+                        (
+                            [product_name] => SUNMI T2 Lite POS Terminal
+                            [brand] => SUNMI
+                            [tier] => Starter
+                            [module] => pos
+                            [category_id] => 
+                            [type] => terminal
+                            [product_id] => 1
+                            [name] => SUNMI T2 Lite POS Terminal
+                            [unit] => 12999
+                            [qty] => 1
+                            [image_url] => assets/images/SUNMI T2 Lite POS Terminal.png
+                            [vendor_name] => Gargour Technologies (POS)
+                            [product_group_key] => 
+                            [vendor_user_id] => 19
+                            [alternatives] => Array
+                                (
+                                )
+
+                        )
+
+                    [printer] => Array
+                        (
+                            [product_name] => Bixolon SRP-350 Receipt Printer
+                            [brand] => Bixolon
+                            [tier] => Starter
+                            [module] => pos
+                            [category_id] => 
+                            [type] => printer
+                            [product_id] => 5
+                            [name] => Bixolon SRP-350 Receipt Printer
+                            [unit] => 4799
+                            [qty] => 1
+                            [image_url] => assets/images/Bixolon SRP-350 Receipt Printer.png
+                            [vendor_name] => Partner Tech Middle East (POS)
+                            [product_group_key] => 
+                            [vendor_user_id] => 20
+                            [alternatives] => Array
+                                (
+                                )
+
+                        )
+
+                )
+
+        )
+
+    [kitchen_cart] => Array
+        (
+            [items] => Array
+                (
+                )
+
+        )
+
+    [furniture_cart] => Array
+        (
+            [items] => Array
+                (
+                    [dining_set] => Array
+                        (
+                            [type] => dining_set
+                            [product_id] => 30
+                            [name] => Wooden Round Dining Set (4-Seater)
+                            [unit] => 15000
+                            [qty] => 5
+                            [image_url] => assets/images/Wooden Round Dining Set (4-Seater).png
+                            [brand] => Generic
+                            [vendor_name] => Homzmart Egypt
+                            [product_name] => Wooden Round Dining Set (4-Seater)
+                            [tier] => balanced
+                            [module] => furniture
+                            [category_id] => 13
+                            [product_group_key] => dining_set_wooden_round_4_generic
+                            [vendor_user_id] => 24
+                            [stock_quantity] => 8
+                            [specs] => Array
+                                (
+                                    [shape] => round
+                                    [is_set] => 1
+                                    [material] => wood
+                                    [seat_count] => 4
+                                    [layout_type] => standard
+                                    [source_label] => amazon
+                                    [restaurant_style] => standard_dining
+                                )
+
+                            [alternatives] => Array
+                                (
+                                )
+
+                        )
+
+                    [tv] => Array
+                        (
+                            [type] => tv
+                            [product_id] => 17
+                            [name] => LG UHD TV 50"
+                            [unit] => 22999
+                            [qty] => 1
+                            [image_url] => assets/images/lguhd.png
+                            [brand] => LG
+                            [vendor_name] => ELARABY Group
+                            [product_name] => LG UHD TV 50"
+                            [tier] => balanced
+                            [module] => furniture
+                            [category_id] => 11
+                            [product_group_key] => 
+                            [vendor_user_id] => 18
+                            [stock_quantity] => 7
+                            [specs] => Array
+                                (
+                                    [screen_size] => 50
+                                )
+
+                            [alternatives] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [id] => 14
+                                            [name] => SAMSUNG 50-inch Crystal UHD 4K Smart TV 50U8000F
+                                            [brand] => Samsung
+                                            [tier] => balanced
+                                            [vendor_name] => B.TECH
+                                            [category_name] => Electronics
+                                            [category_id] => 11
+                                            [price] => 23999
+                                            [image_url] => assets/images/SAMSUNG 50-inch Crystal UHD 4K Smart TV 50U8000F.webp
+                                            [vendor_user_id] => 17
+                                            [product_group_key] => 
+                                            [created_at] => 2026-02-25 23:12:50.381654+02
+                                            [stock_quantity] => 8
+                                            [specs] => Array
+                                                (
+                                                    [screen_size] => 50
+                                                )
+
+                                        )
+
+                                )
+
+                        )
+
+                )
+
+        )
+
+    [ac_units] => 2
+    [ac_tonnage] => 2
+    [ac_rate] => 750
+)
+
+---
+Array
+(
+    [step] => 7
+    [staffing_needed] => yes
+    [waiter_count] => 2
+    [staff_roles] => Array
+        (
+            [0] => waiter
+            [1] => chef
+            [2] => cashier
+        )
+
+    [chef_count] => 1
+    [cashier_count] => 1
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+)
+
+---
+place_order session: Array
+(
+    [business_name] => asas
+    [business_type] => Restaurant
+    [restaurant_type] => fast_food
+    [indoor_seats] => 20
+    [outdoor_seats] => 0
+    [area_sqm] => 50
+    [modules] => Array
+        (
+            [0] => kitchen
+            [1] => pos
+            [2] => furniture
+            [3] => electronics
+        )
+
+    [budget] => 1000000
+    [installation_needed] => yes
+    [installation_services] => Array
+        (
+            [0] => ac
+            [1] => kitchen
+        )
+
+    [staffing_needed] => yes
+    [staff_roles] => Array
+        (
+            [0] => waiter
+            [1] => chef
+            [2] => cashier
+        )
+
+    [technicians] => Array
+        (
+            [0] => ac
+            [1] => kitchen
+        )
+
+    [waiter_count] => 2
+    [chef_count] => 1
+    [cashier_count] => 1
+    [security_count] => 0
+    [kitchen_helper_count] => 0
+    [labor] => Array
+        (
+            [barista] => 0
+            [cashier] => 1
+            [waiter] => 2
+            [chef] => 1
+            [cleaner] => 0
+            [security] => 0
+            [kitchen_helper] => 0
+        )
+
+    [pos_cart_tier] => Balanced
+    [kitchen_cart_tier] => Premium
+    [furniture_cart_tier] => Starter
+    [pos_cart] => Array
+        (
+            [items] => Array
+                (
+                    [terminal] => Array
+                        (
+                            [product_name] => PartnerTech POS Touch Terminal 15"
+                            [brand] => PartnerTech
+                            [tier] => Balanced
+                            [module] => pos
+                            [category_id] => 
+                            [type] => terminal
+                            [product_id] => 2
+                            [name] => PartnerTech POS Touch Terminal 15"
+                            [unit] => 17999
+                            [qty] => 1
+                            [image_url] => assets/images/PartnerTech POS Touch Terminal 15.png
+                            [vendor_name] => Partner Tech Middle East (POS)
+                            [product_group_key] => 
+                            [vendor_user_id] => 20
+                            [alternatives] => Array
+                                (
+                                )
+
+                        )
+
+                    [printer] => Array
+                        (
+                            [product_name] => Epson TM-T88VI Receipt Printer
+                            [brand] => Epson
+                            [tier] => Balanced
+                            [module] => pos
+                            [category_id] => 
+                            [type] => printer
+                            [product_id] => 4
+                            [name] => Epson TM-T88VI Receipt Printer
+                            [unit] => 6999
+                            [qty] => 1
+                            [image_url] => assets/images/Epson TM-T88VI Receipt Printer.png
+                            [vendor_name] => Gargour Technologies (POS)
+                            [product_group_key] => 
+                            [vendor_user_id] => 19
+                            [alternatives] => Array
+                                (
+                                )
+
+                        )
+
+                )
+
+        )
+
+    [kitchen_cart] => Array
+        (
+            [items] => Array
+                (
+                )
+
+        )
+
+    [furniture_cart] => Array
+        (
+            [items] => Array
+                (
+                    [tv] => Array
+                        (
+                            [type] => tv
+                            [product_id] => 16
+                            [name] => LG UHD TV 43"
+                            [unit] => 17999
+                            [qty] => 1
+                            [image_url] => assets/images/lguhd.png
+                            [brand] => LG
+                            [vendor_name] => ELARABY Group
+                            [product_name] => LG UHD TV 43"
+                            [tier] => starter
+                            [module] => furniture
+                            [category_id] => 11
+                            [product_group_key] => 
+                            [vendor_user_id] => 18
+                            [stock_quantity] => 9
+                            [specs] => Array
+                                (
+                                    [screen_size] => 43
+                                )
+
+                            [alternatives] => Array
+                                (
+                                    [0] => Array
+                                        (
+                                            [id] => 13
+                                            [name] => Samsung Crystal UHD TV 43"
+                                            [brand] => Samsung
+                                            [tier] => starter
+                                            [vendor_name] => B.TECH
+                                            [category_name] => Electronics
+                                            [category_id] => 11
+                                            [price] => 18999
+                                            [image_url] => assets/images/samsungscreen43.png
+                                            [vendor_user_id] => 17
+                                            [product_group_key] => 
+                                            [created_at] => 2026-02-25 23:12:50.381654+02
+                                            [stock_quantity] => 10
+                                            [specs] => Array
+                                                (
+                                                    [screen_size] => 43
+                                                )
+
+                                        )
+
+                                )
+
+                        )
+
+                )
+
+        )
+
+    [ac_units] => 2
+    [ac_tonnage] => 2
+    [ac_rate] => 750
+)
+
+---

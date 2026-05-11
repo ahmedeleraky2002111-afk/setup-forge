@@ -5,6 +5,7 @@
 // Does NOT create vendor fulfillments or jobs yet
 
 session_start();
+file_put_contents(__DIR__ . "/wizard_debug.txt", "place_order session: " . print_r($_SESSION["wizard"] ?? [], true) . "\n---\n", FILE_APPEND);
 
 if (!isset($_SESSION["user_id"])) {
   header("Location: auth/login.php?next=" . urlencode("order_summary.php"));
@@ -140,10 +141,19 @@ try {
   WHERE id = $3
 ", [
 json_encode([
-  "roles"             => $_SESSION["wizard"]["labor"] ?? [],
+  "roles" => [
+    "waiter"         => (int)($_SESSION["wizard"]["waiter_count"]         ?? 0),
+    "chef"           => (int)($_SESSION["wizard"]["chef_count"]           ?? 0),
+    "cashier"        => (int)($_SESSION["wizard"]["cashier_count"]        ?? 0),
+    "security"       => (int)($_SESSION["wizard"]["security_count"]       ?? 0),
+    "kitchen_helper" => (int)($_SESSION["wizard"]["kitchen_helper_count"] ?? 0),
+    "barista"        => 0,
+    "cleaner"        => 0,
+  ],
   "salary_amount"     => (int)($_SESSION["wizard"]["salary_amount"] ?? 0),
   "compensation_type" => $_SESSION["wizard"]["compensation_type"] ?? "monthly",
-]),json_encode([
+]),
+json_encode([
   "services" => $_SESSION["wizard"]["installation_services"] ?? [],
   "area_sqm" => (int)($_SESSION["wizard"]["area_sqm"] ?? 50),
   "ac_units" => (int)($_SESSION["wizard"]["ac_units"] ?? 1),

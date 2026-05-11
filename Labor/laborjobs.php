@@ -157,7 +157,7 @@ if ($isTechnician) {
             END AS already_applied
          FROM jobs j
         WHERE j.job_type = 'labor'
-  AND (LOWER(j.labor_role) = LOWER($2) OR j.labor_role IS NULL)
+AND LOWER(j.labor_role) = LOWER($2)
          GROUP BY j.business_id, j.title, j.location
          HAVING COUNT(*) FILTER (WHERE j.worker_id IS NULL AND j.status = 'available') > 0
          ORDER BY j.business_id DESC, j.title ASC",

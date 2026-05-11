@@ -58,13 +58,19 @@ if ($provider_type === "technician") {
     $card1Value = $jobsTodayRes ? (int)pg_fetch_result($jobsTodayRes, 0, 0) : 0;
 } else {
     /* Available labor jobs */
-    $availableJobsRes = pg_query(
-        $conn,
-        "SELECT COUNT(*) 
-         FROM jobs 
-         WHERE job_type = 'labor'
-           AND status = 'available'"
-    );
+   $laborRoleRes = pg_query_params($conn, "SELECT labor_role FROM labors WHERE user_id = $1 LIMIT 1", [$worker_id]);
+$laborRoleRow = $laborRoleRes ? pg_fetch_assoc($laborRoleRes) : null;
+$dashLaborRole = strtolower(trim($laborRoleRow['labor_role'] ?? ''));
+
+$availableJobsRes = pg_query_params(
+    $conn,
+    "SELECT COUNT(*) 
+     FROM jobs 
+     WHERE job_type = 'labor'
+       AND status = 'available'
+       AND LOWER(labor_role) = $1",
+    [$dashLaborRole]
+);
     $card1Title = "Available Jobs";
     $card1Value = $availableJobsRes ? (int)pg_fetch_result($availableJobsRes, 0, 0) : 0;
 }

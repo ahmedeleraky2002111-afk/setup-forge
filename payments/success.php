@@ -95,7 +95,7 @@ unset($_SESSION["wizard"]["furniture_cart"]);
   <div class="row justify-content-center">
     <div class="col-lg-8">
       <div class="p-4 p-lg-5 border rounded-4 bg-white text-center shadow-sm">
-        <h1 class="fw-bold mb-2">Payment Result</h1>
+        <h1 class="fw-bold mb-2">Payment succesful</h1>
         <p class="text-secondary mb-4">
           This page shows the latest status returned to your order.
         </p>
