@@ -111,10 +111,15 @@ if ($currentStep === 7) {
   $_SESSION["wizard"]["chef_count"]           = max(0, (int)($_POST["chef_count"]           ?? 0));
   $_SESSION["wizard"]["cashier_count"]        = max(0, (int)($_POST["cashier_count"]        ?? 0));
   $_SESSION["wizard"]["security_count"]       = max(0, (int)($_POST["security_count"]       ?? 0));
+  $_SESSION["wizard"]["barista_count"]        = max(0, (int)($_POST["barista_count"]        ?? 0));
+  $_SESSION["wizard"]["busboy_count"]         = max(0, (int)($_POST["busboy_count"]         ?? 0));
+  $_SESSION["wizard"]["host_count"]           = max(0, (int)($_POST["host_count"]           ?? 0));
   $_SESSION["wizard"]["kitchen_helper_count"] = max(0, (int)($_POST["kitchen_helper_count"] ?? 0));
 
   $_SESSION["wizard"]["labor"] = [
-    "barista"        => 0,
+    "barista"        => $_SESSION["wizard"]["barista_count"],
+    "busboy"         => $_SESSION["wizard"]["busboy_count"],
+    "host"           => $_SESSION["wizard"]["host_count"],
     "cashier"        => $_SESSION["wizard"]["cashier_count"],
     "waiter"         => $_SESSION["wizard"]["waiter_count"],
     "chef"           => $_SESSION["wizard"]["chef_count"],
@@ -822,6 +827,57 @@ function getMin(field){
     <input type="checkbox" name="staff_roles[]" value="security" id="chk_security" hidden>
   </div>
 
+  <div class="sf6-staff-row" id="row_barista">
+    <div class="sf6-staff-left">
+      <div class="sf6-staff-icon"><i class="bi bi-cup-hot"></i></div>
+      <div class="sf6-staff-info">
+        <span class="sf6-staff-name">Baristas</span>
+        <span class="sf6-staff-role">Coffee &amp; beverages</span>
+      </div>
+    </div>
+    <div class="sf6-qty-ctrl">
+      <button type="button" class="sf6-qty-btn" data-action="minus" data-role="barista">−</button>
+      <span class="sf6-qty-num" id="qty_barista">0</span>
+      <button type="button" class="sf6-qty-btn" data-action="plus" data-role="barista">+</button>
+    </div>
+    <input type="number" name="barista_count" id="input_barista" value="<?= (int)($w['barista_count'] ?? 0) ?>" min="0" hidden>
+    <input type="checkbox" name="staff_roles[]" value="barista" id="chk_barista" hidden>
+  </div>
+
+  <div class="sf6-staff-row" id="row_busboy">
+    <div class="sf6-staff-left">
+      <div class="sf6-staff-icon"><i class="bi bi-trash"></i></div>
+      <div class="sf6-staff-info">
+        <span class="sf6-staff-name">Table Cleaners</span>
+        <span class="sf6-staff-role">Table clearing &amp; resetting</span>
+      </div>
+    </div>
+    <div class="sf6-qty-ctrl">
+      <button type="button" class="sf6-qty-btn" data-action="minus" data-role="busboy">−</button>
+      <span class="sf6-qty-num" id="qty_busboy">0</span>
+      <button type="button" class="sf6-qty-btn" data-action="plus" data-role="busboy">+</button>
+    </div>
+    <input type="number" name="busboy_count" id="input_busboy" value="<?= (int)($w['busboy_count'] ?? 0) ?>" min="0" hidden>
+    <input type="checkbox" name="staff_roles[]" value="busboy" id="chk_busboy" hidden>
+  </div>
+
+  <div class="sf6-staff-row" id="row_host">
+    <div class="sf6-staff-left">
+      <div class="sf6-staff-icon"><i class="bi bi-person-badge"></i></div>
+      <div class="sf6-staff-info">
+        <span class="sf6-staff-name">Reception Staff</span>
+        <span class="sf6-staff-role">Greeting &amp; seating customers</span>
+      </div>
+    </div>
+    <div class="sf6-qty-ctrl">
+      <button type="button" class="sf6-qty-btn" data-action="minus" data-role="host">−</button>
+      <span class="sf6-qty-num" id="qty_host">0</span>
+      <button type="button" class="sf6-qty-btn" data-action="plus" data-role="host">+</button>
+    </div>
+    <input type="number" name="host_count" id="input_host" value="<?= (int)($w['host_count'] ?? 0) ?>" min="0" hidden>
+    <input type="checkbox" name="staff_roles[]" value="host" id="chk_host" hidden>
+  </div>
+
   <div class="sf6-staff-row" id="row_kitchen_helper">
     <div class="sf6-staff-left">
       <div class="sf6-staff-icon"><i class="bi bi-wrench"></i></div>
@@ -855,6 +911,9 @@ function getMin(field){
     chef:           parseInt(document.getElementById('input_chef').value)           || 0,
     cashier:        parseInt(document.getElementById('input_cashier').value)        || 0,
     security:       parseInt(document.getElementById('input_security').value)       || 0,
+    barista:        parseInt(document.getElementById('input_barista').value)        || 0,
+    busboy:         parseInt(document.getElementById('input_busboy').value)         || 0,
+    host:           parseInt(document.getElementById('input_host').value)           || 0,
     kitchen_helper: parseInt(document.getElementById('input_kitchen_helper').value) || 0
   };
 
