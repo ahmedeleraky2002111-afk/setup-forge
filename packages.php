@@ -18,7 +18,7 @@ $outdoorSeats = (int)($w["outdoor_seats"] ?? 0);
 $modules  = $w["modules"] ?? [];
 $budget   = (int)($w["budget"] ?? 0);
 $restaurantType = $w["restaurant_type"] ?? "standard_dining";
-
+$areaSqm = (int)($w["area_sqm"] ?? 50);
 // normalize size
 $sizeNorm = ucfirst(strtolower($size));
 if (in_array($sizeNorm, ["Small","Medium","Large"], true)) $size = $sizeNorm;
@@ -723,6 +723,17 @@ function furniture_quantities_by_size($indoorSeats, $restaurantType = "standard_
     "chair" => $chairs,
     "tv"    => $tvs,
   ];
+}
+function ac_units_from_area($areaSqm){
+  return max(1, (int)ceil($areaSqm / 40));
+}
+
+function ac_tonnage_from_area_per_unit($areaSqm, $acUnits){
+  $areaPerUnit = $areaSqm / max(1, $acUnits);
+  if ($areaPerUnit <= 20) return ["tonnage" => "1.5", "rate" => 700];
+  if ($areaPerUnit <= 30) return ["tonnage" => "2",   "rate" => 750];
+  if ($areaPerUnit <= 45) return ["tonnage" => "2.5", "rate" => 850];
+  return                         ["tonnage" => "3",   "rate" => 900];
 }
 function dining_set_target_spec($restaurantType, $size){
   $restaurantType = strtolower(trim((string)$restaurantType));
@@ -1557,6 +1568,12 @@ if ($furnitureCap > 0 && empty($_SESSION["wizard"]["furniture_cart"])) {
   );
 }
 
+// Store AC unit count for service_jobs.php pricing
+$acUnits = ac_units_from_area($areaSqm);
+$acTonnageData = ac_tonnage_from_area_per_unit($areaSqm, $acUnits);
+$_SESSION["wizard"]["ac_units"]   = $acUnits;
+$_SESSION["wizard"]["ac_tonnage"] = $acTonnageData["tonnage"];
+$_SESSION["wizard"]["ac_rate"]    = $acTonnageData["rate"];
 
 
 $posCart = $_SESSION["wizard"]["pos_cart"] ?? null;

@@ -43,6 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   $_SESSION["wizard"]["indoor_seats"]  = max(1, (int)($_POST["indoor_seats"]  ?? 1));
   $_SESSION["wizard"]["outdoor_seats"] = max(0, (int)($_POST["outdoor_seats"] ?? 0));
+    $_SESSION["wizard"]["area_sqm"]      = max(10, (int)($_POST["area_sqm"] ?? 50));
+
 
   $rt = $_SESSION["wizard"]["restaurant_type"] ?? "standard_dining";
   if ($rt === "cloud_kitchen") {
@@ -146,6 +148,7 @@ $business = $w["business_type"] ?? "";
 $indoorSeats  = (int)($w["indoor_seats"]  ?? 0);
 $outdoorSeats = (int)($w["outdoor_seats"] ?? 0);
 $restaurantType = $w["restaurant_type"] ?? "";
+$areaSqm = (int)($w["area_sqm"] ?? 0);
 $modules = $w["modules"] ?? [];
 $modules = array_values(array_filter($modules, function($m){
   return in_array($m, ["kitchen","pos","furniture","electronics","ambience"], true);
@@ -557,6 +560,29 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       </div>
 
     </div>
+    <!-- Area -->
+    <div class="sf-seat-cards-row" style="margin-top:1rem">
+      <div class="sf-seat-card <?= ($areaSqm > 0) ? 'is-active' : '' ?>" id="area-card">
+        <div class="sf-seat-card-head">
+          <div class="sf-seat-card-icon indoor">
+            <i class="bi bi-arrows-angle-expand"></i>
+          </div>
+          <div class="sf-seat-card-title">Restaurant Area</div>
+          <div class="sf-seat-card-hint">Total floor space in m²</div>
+        </div>
+        <div class="sf-seat-stepper">
+          <button type="button" class="sf-step-btn" data-field="area_sqm" data-delta="-10">−</button>
+          <input type="number" class="sf-seat-num-input" name="area_sqm" id="area_sqm"
+                 min="10" step="10" value="<?= $areaSqm > 0 ? h($areaSqm) : 50 ?>">
+          <button type="button" class="sf-step-btn" data-field="area_sqm" data-delta="10">+</button>
+        </div>
+        <div class="sf-seat-presets">
+          <?php foreach ([30, 50, 80, 120, 200, 300] as $p): ?>
+          <button type="button" class="sf-seat-preset" data-field="area_sqm" data-val="<?= $p ?>"><?= $p ?>m²</button>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    </div>
 
     <!-- Total bar -->
     <div class="sf-seat-total-bar">
@@ -577,12 +603,16 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   const inputs = {
     indoor_seats:  document.getElementById('indoor_seats'),
     outdoor_seats: document.getElementById('outdoor_seats'),
+    area_sqm:      document.getElementById('area_sqm'),
   };
   const totalEl = document.getElementById('total-seats');
   const sizeEl  = document.getElementById('size-label');
 
-  function getMin(field){ return field === 'indoor_seats' ? 1 : 0; }
-
+function getMin(field){
+    if (field === 'indoor_seats') return 1;
+    if (field === 'area_sqm') return 10;
+    return 0;
+  }
   function updateTotal(){
     const indoor  = parseInt(inputs.indoor_seats.value)  || 0;
     const outdoor = parseInt(inputs.outdoor_seats.value) || 0;
@@ -680,6 +710,16 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     <div class="sf6-card-name">AC Installation</div>
     <div class="sf6-card-desc">Air conditioning units &amp; ventilation</div>
     <input type="checkbox" name="installation_services[]" value="ac" class="sf6-svc-chk" hidden>
+  </div>
+
+  <div class="sf6-card">
+    <div class="sf6-card-top">
+      <div class="sf6-card-icon"><i class="bi bi-fire"></i></div>
+      <div class="sf6-card-circle"><i class="bi bi-check2"></i></div>
+    </div>
+    <div class="sf6-card-name">Kitchen Setup</div>
+    <div class="sf6-card-desc">Commercial kitchen equipment installation &amp; gas connections</div>
+    <input type="checkbox" name="installation_services[]" value="kitchen" class="sf6-svc-chk" hidden>
   </div>
 
 </div>

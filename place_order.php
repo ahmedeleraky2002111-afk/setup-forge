@@ -91,12 +91,8 @@ $preferredDeliveryDate = trim((string)($_POST["preferred_delivery_date"] ?? ""))
 $userId = (int)$_SESSION["user_id"];
 
 // ONLY treat user as business if they actually exist in businesses table
-$businessExists = false;
-
-$chk = pg_query_params($conn, "SELECT 1 FROM businesses WHERE user_id = $1 LIMIT 1", [$userId]);
-if ($chk && pg_num_rows($chk) > 0) {
-  $businessExists = true;
-}
+$userType = $_SESSION["user_type"] ?? "customer";
+$businessExists = ($userType === "business");
 
 $customerId = $businessExists ? null : $userId;
 $businessId = $businessExists ? $userId : null;
@@ -144,8 +140,11 @@ try {
   WHERE id = $3
 ", [
   json_encode($_SESSION["wizard"]["labor"] ?? []),
-  json_encode($_SESSION["wizard"]["installation_services"] ?? []),
-  $orderId
+json_encode([
+  "services" => $_SESSION["wizard"]["installation_services"] ?? [],
+  "area_sqm" => (int)($_SESSION["wizard"]["area_sqm"] ?? 50),
+  "ac_units" => (int)($_SESSION["wizard"]["ac_units"] ?? 1),
+]),  $orderId
 ]);
 
 if (!$saveJobData) {

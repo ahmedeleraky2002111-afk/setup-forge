@@ -328,7 +328,8 @@ try {
         }
       }
 
-      $installationServices = json_decode($order["installation_data"] ?? "[]", true);
+     $installationData = json_decode($order["installation_data"] ?? "[]", true);
+$installationServices = $installationData["services"] ?? $installationData;
 
 if (is_array($installationServices) && !empty($installationServices) && $businessId !== null) {
   $insInstallationSql = "
@@ -356,10 +357,7 @@ if (is_array($installationServices) && !empty($installationServices) && $busines
 }
     }
 
-    unset($_SESSION["carts"]);
-    unset($_SESSION["wizard"]["pos_cart"]);
-    unset($_SESSION["wizard"]["kitchen_cart"]);
-  }
+    }
 
   pg_query($conn, "COMMIT");
   http_response_code(200);

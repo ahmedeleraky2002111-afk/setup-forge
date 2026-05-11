@@ -155,7 +155,7 @@ list($paymobOrderJson) = post_json(
     "delivery_needed" => false,
     "amount_cents" => $amountCents,
     "currency" => "EGP",
-    "merchant_order_id" => (string)$orderId,
+"merchant_order_id" => $orderId . "_" . time(),
     "items" => []
   ]
 );

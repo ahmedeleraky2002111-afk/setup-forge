@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['apply_group']) && !$i
                AND j.business_id = $2
                AND j.title = $3
                AND j.location = $4
-               AND LOWER(j.labor_role) = LOWER($5)
+AND (LOWER(j.labor_role) = LOWER($5) OR j.labor_role IS NULL)
              LIMIT 1",
             [$worker_id, $business_id_of_job, $title, $location, $labor_role]
         );
@@ -85,9 +85,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['apply_group']) && !$i
                    AND business_id = $1
                    AND title = $2
                    AND location = $3
-                   AND LOWER(labor_role) = LOWER($4)
-                   AND status = 'available'
-                   AND worker_id IS NULL
+                   AND (LOWER(labor_role) = LOWER($4) OR labor_role IS NULL)
+AND status = 'available'
+AND worker_id IS NULL
                  ORDER BY job_id ASC
                  LIMIT 1",
                 [$business_id_of_job, $title, $location, $labor_role]
@@ -156,8 +156,8 @@ if ($isTechnician) {
                 ELSE false
             END AS already_applied
          FROM jobs j
-         WHERE j.job_type = 'labor'
-           AND LOWER(j.labor_role) = LOWER($2)
+        WHERE j.job_type = 'labor'
+  AND (LOWER(j.labor_role) = LOWER($2) OR j.labor_role IS NULL)
          GROUP BY j.business_id, j.title, j.location
          HAVING COUNT(*) FILTER (WHERE j.worker_id IS NULL AND j.status = 'available') > 0
          ORDER BY j.business_id DESC, j.title ASC",
