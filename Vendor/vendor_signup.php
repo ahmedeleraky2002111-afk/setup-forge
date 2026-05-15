@@ -1,0 +1,523 @@
+<?php
+session_start();
+
+require_once "../db.php";
+if (!isset($conn) || !$conn) {
+  http_response_code(500);
+  die("Database connection missing. Check ../db.php (\$conn).");
+}
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+/* =========================
+   Helpers
+========================= */
+function h($s){
+  return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+}
+
+function redirect_to_step($step, $error = ""){
+  $url = "vendor_signup.php?step=" . urlencode((string)$step);
+  if ($error !== "") $url .= "&error=" . urlencode($error);
+  header("Location: " . $url);
+  exit;
+}
+
+function uploadFile(array $file, int $userId): string
+{
+  if (!isset($file) || !isset($file["error"]) || $file["error"] !== UPLOAD_ERR_OK) {
+    throw new Exception("File upload failed.");
+  }
+
+  $folderAbs = __DIR__ . "/uploads/vendors/" . $userId;
+  if (!is_dir($folderAbs)) {
+    if (!mkdir($folderAbs, 0777, true) && !is_dir($folderAbs)) {
+      throw new Exception("Could not create upload folder.");
+    }
+  }
+
+  $safeName = preg_replace("/[^a-zA-Z0-9._-]/", "_", basename($file["name"]));
+  $fileName = time() . "_" . $safeName;
+  $targetAbs = $folderAbs . "/" . $fileName;
+
+  if (!move_uploaded_file($file["tmp_name"], $targetAbs)) {
+    throw new Exception("Could not save uploaded file.");
+  }
+
+  return "uploads/vendors/" . $userId . "/" . $fileName;
+}
+
+/* =========================
+   Step logic
+========================= */
+$step = $_GET["step"] ?? "1";
+$step = ($step === "2") ? "2" : "1";
+
+$old = $_SESSION["vendor_signup"] ?? [];
+$errorMsg = trim((string)($_GET["error"] ?? ""));
+
+/* =========================
+   Handle POST
+========================= */
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+  $action = $_POST["action"] ?? "";
+
+  /* ---------- STEP 1 ---------- */
+  if ($action === "step1") {
+
+    $_SESSION["vendor_signup"] = array_merge($_SESSION["vendor_signup"] ?? [], [
+      "name" => trim($_POST["name"] ?? ""),
+      "email" => trim($_POST["email"] ?? ""),
+      "password" => (string)($_POST["password"] ?? ""),
+      "phone" => trim($_POST["phone"] ?? ""),
+
+      "country" => trim($_POST["country"] ?? ""),
+      "city" => trim($_POST["city"] ?? ""),
+      "street" => trim($_POST["street"] ?? ""),
+
+      "items_type" => trim($_POST["items_type"] ?? ""),
+      "certifications_note" => trim($_POST["certifications_note"] ?? ""),
+    ]);
+
+    redirect_to_step(2);
+  }
+
+  /* ---------- STEP 2 FINISH ---------- */
+  if ($action === "step2_finish") {
+
+    if (empty($_SESSION["vendor_signup"]["email"])) {
+      redirect_to_step(1, "Signup session expired. Please start again.");
+    }
+
+    $_SESSION["vendor_signup"] = array_merge($_SESSION["vendor_signup"] ?? [], [
+      "bank_name" => trim($_POST["bank_name"] ?? ""),
+      "bank_account_number" => trim($_POST["bank_account_number"] ?? ""),
+      "account_name" => trim($_POST["account_name"] ?? ""),
+    ]);
+
+    $data = $_SESSION["vendor_signup"] ?? null;
+    if (!$data) {
+      redirect_to_step(1, "Signup session expired. Please start again.");
+    }
+
+    $name = trim($data["name"] ?? "");
+    $email = trim($data["email"] ?? "");
+    $password = (string)($data["password"] ?? "");
+    $phone = trim($data["phone"] ?? "");
+
+    $country = trim($data["country"] ?? "");
+    $city = trim($data["city"] ?? "");
+    $street = trim($data["street"] ?? "");
+
+    $items_type = trim($data["items_type"] ?? "");
+    $certifications_note = trim($data["certifications_note"] ?? "");
+
+    $bank_name = trim($data["bank_name"] ?? "");
+    $bank_account_number = trim($data["bank_account_number"] ?? "");
+    $account_name = trim($data["account_name"] ?? "");
+
+    if ($name === "" || $email === "" || $password === "" || $items_type === "") {
+      redirect_to_step(1, "Missing required fields in Step 1.");
+    }
+
+    if (
+      !isset($_FILES["commercial_reg"]) || $_FILES["commercial_reg"]["error"] !== UPLOAD_ERR_OK ||
+      !isset($_FILES["tax_card"]) || $_FILES["tax_card"]["error"] !== UPLOAD_ERR_OK
+    ) {
+      redirect_to_step(2, "Please upload Commercial Register and Tax Card.");
+    }
+
+    try {
+      /* ---------- START TRANSACTION ---------- */
+      if (!pg_query($conn, "BEGIN")) {
+        throw new Exception("Could not start database transaction.");
+      }
+
+      $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+
+      /* 1) Insert into users */
+      $resultUser = pg_query_params($conn, "
+        INSERT INTO users
+          (name, email, password_hash, user_type, phone, country, city, street, status, created_at)
+        VALUES
+          ($1, $2, $3, 'vendor', $4, $5, $6, $7, 'pending', NOW())
+        RETURNING id
+      ", [
+        $name,
+        $email,
+        $passwordHash,
+        ($phone !== "" ? $phone : null),
+        ($country !== "" ? $country : null),
+        ($city !== "" ? $city : null),
+        ($street !== "" ? $street : null),
+      ]);
+
+      if (!$resultUser) {
+        throw new Exception("Could not create user: " . pg_last_error($conn));
+      }
+
+      $userRow = pg_fetch_assoc($resultUser);
+      $user_id = (int)($userRow["id"] ?? 0);
+
+      if ($user_id <= 0) {
+        throw new Exception("Could not create user ID.");
+      }
+
+      /* 2) Insert into vendors */
+      $resultVendor = pg_query_params($conn, "
+        INSERT INTO vendors
+          (user_id, items_type, commercial_reg, tax_card, verification_status,
+           bank_name, bank_account_number, account_name, certifications_note, status)
+        VALUES
+          ($1, $2, NULL, NULL, 'pending', $3, $4, $5, $6, 'pending')
+      ", [
+        $user_id,
+        $items_type,
+        ($bank_name !== "" ? $bank_name : null),
+        ($bank_account_number !== "" ? $bank_account_number : null),
+        ($account_name !== "" ? $account_name : null),
+        ($certifications_note !== "" ? $certifications_note : null),
+      ]);
+
+      if (!$resultVendor) {
+        throw new Exception("Could not create vendor: " . pg_last_error($conn));
+      }
+
+      /* 3) Upload files */
+      $commercialPath = uploadFile($_FILES["commercial_reg"], $user_id);
+      $taxCardPath = uploadFile($_FILES["tax_card"], $user_id);
+
+      /* 4) Update vendor file paths */
+      $resultUpdateVendor = pg_query_params($conn, "
+        UPDATE vendors
+        SET commercial_reg = $1,
+            tax_card = $2
+        WHERE user_id = $3
+      ", [
+        $commercialPath,
+        $taxCardPath,
+        $user_id
+      ]);
+
+      if (!$resultUpdateVendor) {
+        throw new Exception("Could not update vendor documents: " . pg_last_error($conn));
+      }
+
+      /* 5) Insert vendor documents */
+      $doc1 = pg_query_params($conn, "
+        INSERT INTO vendor_documents
+          (vendor_user_id, doc_type, file_url, status, uploaded_at)
+        VALUES
+          ($1, $2, $3, 'pending', NOW())
+      ", [
+        $user_id,
+        "commercial_register",
+        $commercialPath
+      ]);
+
+      if (!$doc1) {
+        throw new Exception("Could not save commercial register document: " . pg_last_error($conn));
+      }
+
+      $doc2 = pg_query_params($conn, "
+        INSERT INTO vendor_documents
+          (vendor_user_id, doc_type, file_url, status, uploaded_at)
+        VALUES
+          ($1, $2, $3, 'pending', NOW())
+      ", [
+        $user_id,
+        "tax_card",
+        $taxCardPath
+      ]);
+
+      if (!$doc2) {
+        throw new Exception("Could not save tax card document: " . pg_last_error($conn));
+      }
+
+      /* ---------- COMMIT ---------- */
+      if (!pg_query($conn, "COMMIT")) {
+        throw new Exception("Could not commit transaction.");
+      }
+
+      unset($_SESSION["vendor_signup"]);
+      ?>
+      <!doctype html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Vendor Signup - Success</title>
+        <link rel="stylesheet" href="vendor_ui.css?v=7">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+      </head>
+      <body>
+        <div class="v-wrap">
+          <div class="v-topbar">
+            <div>
+              <h1>Signup Complete</h1>
+              <div class="v-subtitle">Your vendor account is created and pending verification.</div>
+            </div>
+            <div class="v-links">
+              <a class="v-btn v-btn-outline" href="../auth/login.php">Go to Login</a>
+            </div>
+          </div>
+
+          <div class="v-section">
+            <div class="v-alert v-alert-success">
+              Vendor signup successful 🎉
+            </div>
+
+            <div class="v-section-desc" style="margin-top:10px;">
+              We received your documents. After approval, your account will be activated.
+            </div>
+
+            <div class="v-actions" style="margin-top:14px;">
+              <a class="v-btn v-btn-primary" href="vendor_login.php">Login</a>
+              <a class="v-btn v-btn-outline" href="../home.php">Back to Home</a>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+      <?php
+      exit;
+
+    } catch (Exception $e) {
+      pg_query($conn, "ROLLBACK");
+
+      $msg = $e->getMessage();
+      if (stripos($msg, "duplicate key") !== false || stripos($msg, "unique") !== false) {
+        redirect_to_step(1, "This email already exists. Please use another email.");
+      }
+
+      redirect_to_step(2, "Signup failed: " . $msg);
+    }
+  }
+
+  redirect_to_step(1, "Invalid request.");
+}
+
+/* =========================
+   Guard step2 if no step1 session
+========================= */
+if ($step === "2" && empty($old["email"])) {
+  redirect_to_step(1, "Please complete Step 1 first.");
+}
+?>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vendor Signup</title>
+
+  <link rel="stylesheet" href="vendor_ui.css?v=7">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="v-wrap">
+
+  <?php if ($step === "1"): ?>
+
+    <div class="v-topbar">
+      <div>
+        <h1>Create Vendor Account</h1>
+        <div class="v-subtitle">Step 1 of 2 • Account, Address & Business</div>
+      </div>
+      <div class="v-links">
+        <a class="v-btn v-btn-outline" href="vendor_login.php">Already have an account?</a>
+      </div>
+    </div>
+
+    <div class="v-section">
+      <h3 class="v-section-title">Step 1</h3>
+      <div class="v-section-desc">Fill the required fields then continue to Step 2.</div>
+
+      <?php if ($errorMsg !== ""): ?>
+        <div class="v-alert v-alert-danger"><?= h($errorMsg) ?></div>
+      <?php endif; ?>
+
+      <form class="v-form" method="POST" action="vendor_signup.php?step=1">
+        <input type="hidden" name="action" value="step1">
+
+        <div class="v-subsection">
+          <div class="v-subsection-head">
+            <div class="v-subsection-title">Account Information</div>
+            <div class="v-pill">Required</div>
+          </div>
+
+          <div class="v-form-grid">
+            <div class="v-field">
+              <label class="v-label">Full Name *</label>
+              <input class="v-input" type="text" name="name" required value="<?= h($old["name"] ?? "") ?>">
+            </div>
+
+            <div class="v-field">
+              <label class="v-label">Email *</label>
+              <input class="v-input" type="email" name="email" required value="<?= h($old["email"] ?? "") ?>">
+            </div>
+
+            <div class="v-field">
+              <label class="v-label">Password *</label>
+              <input class="v-input" type="password" name="password" required value="<?= h($old["password"] ?? "") ?>">
+            </div>
+
+            <div class="v-field">
+              <label class="v-label">Phone</label>
+              <input class="v-input" type="text" name="phone" value="<?= h($old["phone"] ?? "") ?>">
+            </div>
+          </div>
+        </div>
+
+        <div class="v-divider"></div>
+
+        <div class="v-subsection">
+          <div class="v-subsection-head">
+            <div class="v-subsection-title">Address</div>
+            <div class="v-pill v-pill-muted">Optional</div>
+          </div>
+
+          <div class="v-form-grid">
+            <div class="v-field">
+              <label class="v-label">Country</label>
+              <input class="v-input" type="text" name="country" value="<?= h($old["country"] ?? "") ?>">
+            </div>
+
+            <div class="v-field">
+              <label class="v-label">City</label>
+              <input class="v-input" type="text" name="city" value="<?= h($old["city"] ?? "") ?>">
+            </div>
+
+            <div class="v-field v-span-2">
+              <label class="v-label">Street</label>
+              <input class="v-input" type="text" name="street" value="<?= h($old["street"] ?? "") ?>">
+            </div>
+          </div>
+        </div>
+
+        <div class="v-divider"></div>
+
+        <div class="v-subsection">
+          <div class="v-subsection-head">
+            <div class="v-subsection-title">Business Information</div>
+            <div class="v-pill">Required</div>
+          </div>
+
+          <div class="v-form-grid">
+            <div class="v-field">
+              <label class="v-label">Items Type *</label>
+              <select class="v-select" name="items_type" required>
+                <option value="" disabled <?= empty($old["items_type"]) ? "selected" : "" ?>>Select category</option>
+                <option value="electronics" <?= (($old["items_type"] ?? "") === "electronics") ? "selected" : "" ?>>Electronics</option>
+                <option value="furniture" <?= (($old["items_type"] ?? "") === "furniture") ? "selected" : "" ?>>Furniture</option>
+                <option value="household" <?= (($old["items_type"] ?? "") === "household") ? "selected" : "" ?>>Household</option>
+              </select>
+            </div>
+
+            <div class="v-field v-span-2">
+              <label class="v-label">Certifications Note</label>
+              <textarea class="v-textarea" name="certifications_note"><?= h($old["certifications_note"] ?? "") ?></textarea>
+            </div>
+          </div>
+
+          <div class="v-actions">
+            <button class="v-btn v-btn-primary" type="submit">Next: Bank + Documents</button>
+            <a class="v-btn v-btn-outline" href="vendor_login.php">Cancel</a>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+  <?php else: ?>
+
+    <div class="v-topbar">
+      <div>
+        <h1>Bank & Documents</h1>
+        <div class="v-subtitle">Step 2 of 2 • Finish signup</div>
+      </div>
+
+      <div class="v-links">
+        <a class="v-btn v-btn-outline" href="vendor_signup.php?step=1">Back</a>
+        <a class="v-btn v-btn-outline" href="vendor_login.php">Login</a>
+      </div>
+    </div>
+
+    <div class="v-section">
+      <h3 class="v-section-title">Step 2</h3>
+      <div class="v-section-desc">Upload required documents and optionally add bank information.</div>
+
+      <?php if ($errorMsg !== ""): ?>
+        <div class="v-alert v-alert-danger"><?= h($errorMsg) ?></div>
+      <?php endif; ?>
+
+      <form class="v-form" method="POST" action="vendor_signup.php?step=2" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="step2_finish">
+
+        <div class="v-subsection">
+          <div class="v-subsection-head">
+            <div class="v-subsection-title">Bank Information</div>
+            <div class="v-pill v-pill-muted">Optional</div>
+          </div>
+
+          <div class="v-form-grid">
+            <div class="v-field">
+              <label class="v-label" for="bank_name">Bank Name</label>
+              <input class="v-input" id="bank_name" type="text" name="bank_name" value="<?= h($old["bank_name"] ?? "") ?>">
+            </div>
+
+            <div class="v-field">
+              <label class="v-label" for="bank_account_number">Bank Account Number</label>
+              <input class="v-input" id="bank_account_number" type="text" name="bank_account_number" value="<?= h($old["bank_account_number"] ?? "") ?>">
+            </div>
+
+            <div class="v-field v-span-2">
+              <label class="v-label" for="account_name">Account Name</label>
+              <input class="v-input" id="account_name" type="text" name="account_name" value="<?= h($old["account_name"] ?? "") ?>">
+            </div>
+          </div>
+        </div>
+
+        <div class="v-divider"></div>
+
+        <div class="v-subsection">
+          <div class="v-subsection-head">
+            <div class="v-subsection-title">Vendor Documents</div>
+            <div class="v-pill">Required</div>
+          </div>
+
+          <div class="v-form-grid">
+            <div class="v-field">
+              <label class="v-label" for="commercial_reg">Commercial Register *</label>
+              <input class="v-input" id="commercial_reg" type="file" name="commercial_reg" required>
+            </div>
+
+            <div class="v-field">
+              <label class="v-label" for="tax_card">Tax Card *</label>
+              <input class="v-input" id="tax_card" type="file" name="tax_card" required>
+            </div>
+          </div>
+
+          <div class="v-actions">
+            <a class="v-btn v-btn-outline" href="vendor_signup.php?step=1">Back</a>
+            <button class="v-btn v-btn-primary" type="submit">Finish Signup</button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+  <?php endif; ?>
+
+</div>
+
+</body>
+</html>

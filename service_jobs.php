@@ -567,10 +567,27 @@ function formatInstallationServices($raw) {
                   if ($co["starting_from"]) {
                     $cid = (int)$co["company_id"];
                     if ($serviceKey === 'ac') {
-                      $rateToUse    = $acRatesMap[$cid] ?? $acRate;
-                      $displayPrice = number_format($rateToUse * $acUnits, 0) . ' EGP';
-                      $priceSub     = $acTonnage . ' ton × ' . $acUnits . ' units';
-                      $breakdownLines = [];
+  $rateToUse    = $acRatesMap[$cid] ?? $acRate;
+  $displayPrice = number_format($rateToUse * $acUnits, 0) . ' EGP';
+  $priceSub     = $acTonnage . ' ton × ' . $acUnits . ' units';
+  $breakdownLines = [];
+  for ($u = 0; $u < $acUnits; $u++) {
+    $breakdownLines[] = [
+      "name"     => $acTonnage . ' Ton AC Unit',
+      "qty"      => 1,
+      "rate"     => $rateToUse,
+      "subtotal" => $rateToUse,
+      "image"    => null,
+    ];
+  }
+  // Collapse into one line if all units same
+  $breakdownLines = [[
+    "name"     => $acTonnage . ' Ton AC Unit',
+    "qty"      => $acUnits,
+    "rate"     => $rateToUse,
+    "subtotal" => $rateToUse * $acUnits,
+    "image"    => null,
+  ]];
                     } elseif ($serviceKey === 'kitchen') {
                       $breakdownLines = $kitchenBreakdown[$cid] ?? [];
                       $total          = $breakdownLines ? breakdownTotal($breakdownLines) : ((int)$co["starting_from"] * (int)($instData["kitchen_item_count"] ?? 1));
@@ -641,11 +658,12 @@ function formatInstallationServices($raw) {
 <?php if (!empty($breakdownLines)): ?>
                 <button
                   onclick='openBreakdownModal(<?= htmlspecialchars(json_encode([
-                    "company"   => $co["company_name"],
-                    "service"   => $serviceKey,
-                    "lines"     => $breakdownLines,
-                    "total"     => breakdownTotal($breakdownLines),
-                  ]), ENT_QUOTES) ?>)'
+    "company"   => $co["company_name"],
+    "logo"      => $coImg,
+    "service"   => $serviceKey,
+    "lines"     => $breakdownLines,
+    "total"     => breakdownTotal($breakdownLines),
+  ]), ENT_QUOTES) ?>)'
                   style="margin-top:10px;width:100%;padding:8px;border-radius:8px;background:#f1f5f9;color:#004cac;font-weight:700;font-size:.82rem;border:1px solid rgba(0,76,172,.15);cursor:pointer;">
                   <i class="bi bi-list-ul me-1"></i> View Details
                 </button>
@@ -1030,8 +1048,13 @@ setTimeout(() => { closeSalaryModal(); window.location.reload(); }, 800);
     <button onclick="closeBreakdownModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.3rem;color:#6b7280;cursor:pointer;">
       <i class="bi bi-x-lg"></i>
     </button>
-    <div id="bm-company" style="font-size:1.05rem;font-weight:800;color:#111827;margin-bottom:4px;"></div>
-    <div id="bm-service" style="font-size:.78rem;font-weight:700;color:#004cac;background:rgba(0,76,172,.08);padding:3px 10px;border-radius:999px;display:inline-block;margin-bottom:20px;"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div id="bm-logo" style="width:48px;height:48px;border-radius:12px;overflow:hidden;flex-shrink:0;background:rgba(0,76,172,.08);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#004cac;"></div>
+      <div>
+        <div id="bm-company" style="font-size:1.05rem;font-weight:800;color:#111827;margin-bottom:4px;"></div>
+        <div id="bm-service" style="font-size:.78rem;font-weight:700;color:#004cac;background:rgba(0,76,172,.08);padding:3px 10px;border-radius:999px;display:inline-block;"></div>
+      </div>
+    </div>
 
     <div id="bm-lines" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;"></div>
 
@@ -1050,6 +1073,13 @@ function openBreakdownModal(data) {
   document.getElementById('bm-company').textContent = data.company;
   document.getElementById('bm-service').textContent = data.service.toUpperCase() + ' Installation';
   document.getElementById('bm-total').textContent   = parseInt(data.total).toLocaleString() + ' EGP';
+
+  const logoEl = document.getElementById('bm-logo');
+  if (data.logo) {
+    logoEl.innerHTML = `<img src="${data.logo}" style="width:100%;height:100%;object-fit:cover;">`;
+  } else {
+    logoEl.textContent = data.company.substring(0, 2).toUpperCase();
+  }
 
   const lines = document.getElementById('bm-lines');
   lines.innerHTML = '';
