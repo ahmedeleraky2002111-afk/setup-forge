@@ -41,8 +41,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
   if ($currentStep === 3) {
 
-  $_SESSION["wizard"]["indoor_seats"]  = max(1, (int)($_POST["indoor_seats"]  ?? 1));
-  $_SESSION["wizard"]["outdoor_seats"] = max(0, (int)($_POST["outdoor_seats"] ?? 0));
+  $indoorTbls  = max(1, (int)($_POST["indoor_tables"]  ?? 1));
+  $outdoorTbls = max(0, (int)($_POST["outdoor_tables"] ?? 0));
+  $_SESSION["wizard"]["indoor_tables"]  = $indoorTbls;
+  $_SESSION["wizard"]["outdoor_tables"] = $outdoorTbls;
+  $_SESSION["wizard"]["indoor_seats"]   = $indoorTbls * 4;
+  $_SESSION["wizard"]["outdoor_seats"]  = $outdoorTbls * 4;
     $_SESSION["wizard"]["area_sqm"]      = max(10, (int)($_POST["area_sqm"] ?? 50));
 
 
@@ -50,9 +54,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   if ($rt === "cloud_kitchen") {
     $_SESSION["wizard"]["modules"] = ["kitchen","pos"];
   } elseif ($rt === "premium_dining") {
-    $_SESSION["wizard"]["modules"] = ["kitchen","pos","furniture","electronics","ambience"];
+    $_SESSION["wizard"]["modules"] = ["kitchen","pos","furniture","electronics","ac"];
   } else {
-    $_SESSION["wizard"]["modules"] = ["kitchen","pos","furniture","electronics"];
+    $_SESSION["wizard"]["modules"] = ["kitchen","pos","furniture","electronics","ac"];
   }
 
   redirect_step(5);
@@ -147,12 +151,14 @@ $businessName = trim($w["business_name"] ?? "");
 $business = $w["business_type"] ?? "";
 $indoorSeats  = (int)($w["indoor_seats"]  ?? 0);
 $outdoorSeats = (int)($w["outdoor_seats"] ?? 0);
+$indoorTables  = (int)($w["indoor_tables"]  ?? ($indoorSeats  > 0 ? (int)ceil($indoorSeats  / 4) : 0));
+$outdoorTables = (int)($w["outdoor_tables"] ?? ($outdoorSeats > 0 ? (int)ceil($outdoorSeats / 4) : 0));
 $restaurantType = $w["restaurant_type"] ?? "";
 $areaSqm = (int)($w["area_sqm"] ?? 0);
 $modules = $w["modules"] ?? [];
 $modules = array_values(array_filter($modules, function($m){
-  return in_array($m, ["kitchen","pos","furniture","electronics","ambience"], true);
-})); 
+  return in_array($m, ["kitchen","pos","furniture","electronics","ac"], true);
+}));
 $moduleTiers = $w["module_tiers"] ?? []; // ✅ per-module tiers
 $budget = (int)($w["budget"] ?? 0);
 
@@ -512,25 +518,25 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     <div class="sf-seat-cards-row">
 
       <!-- Indoor -->
-      <div class="sf-seat-card <?= ($indoorSeats > 0) ? 'is-active' : '' ?>" id="indoor-card">
+      <div class="sf-seat-card <?= ($indoorTables > 0) ? 'is-active' : '' ?>" id="indoor-card">
         <div class="sf-seat-card-head">
           <div class="sf-seat-card-icon indoor">
             <i class="bi bi-house-door-fill"></i>
           </div>
-          <div class="sf-seat-card-title">Indoor</div>
+          <div class="sf-seat-card-title">Indoor Tables</div>
           <div class="sf-seat-card-hint">Dining room, bar &amp; lounge</div>
         </div>
 
         <div class="sf-seat-stepper">
-          <button type="button" class="sf-step-btn" data-field="indoor_seats" data-delta="-1">−</button>
-          <input type="number" class="sf-seat-num-input" name="indoor_seats" id="indoor_seats"
-                 min="1" value="<?= $indoorSeats > 0 ? h($indoorSeats) : 20 ?>" required>
-          <button type="button" class="sf-step-btn" data-field="indoor_seats" data-delta="1">+</button>
+          <button type="button" class="sf-step-btn" data-field="indoor_tables" data-delta="-1">−</button>
+          <input type="number" class="sf-seat-num-input" name="indoor_tables" id="indoor_tables"
+                 min="1" value="<?= $indoorTables > 0 ? h($indoorTables) : 5 ?>" required>
+          <button type="button" class="sf-step-btn" data-field="indoor_tables" data-delta="1">+</button>
         </div>
 
         <div class="sf-seat-presets">
-          <?php foreach ([10, 20, 40, 60, 80, 100] as $p): ?>
-          <button type="button" class="sf-seat-preset" data-field="indoor_seats" data-val="<?= $p ?>"><?= $p ?></button>
+          <?php foreach ([4, 6, 10, 15, 20, 25] as $p): ?>
+          <button type="button" class="sf-seat-preset" data-field="indoor_tables" data-val="<?= $p ?>"><?= $p ?></button>
           <?php endforeach; ?>
         </div>
       </div>

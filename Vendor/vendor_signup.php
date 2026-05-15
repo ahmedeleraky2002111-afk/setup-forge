@@ -333,7 +333,7 @@ if ($step === "2" && empty($old["email"])) {
         <div class="v-subtitle">Step 1 of 2 • Account, Address & Business</div>
       </div>
       <div class="v-links">
-        <a class="v-btn v-btn-outline" href="vendor_login.php">Already have an account?</a>
+        <a class="v-btn v-btn-outline" href="../auth/login.php">Already have an account?</a>
       </div>
     </div>
 

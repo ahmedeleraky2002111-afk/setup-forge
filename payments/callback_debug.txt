@@ -1216,3 +1216,32 @@ ENTERED !alreadyPaid block for order 124
 entered success block for order 124
 entered success block for order 124
 entered success block for order 124
+Array
+(
+    [time] => 2026-05-15 19:58:25
+    [order_id] => 127
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 206
+    [labor_data] => {"roles": {"chef": 1, "host": 0, "busboy": 0, "waiter": 3, "barista": 0, "cashier": 0, "cleaner": 0, "security": 0, "kitchen_helper": 0}, "salary_amount": 0, "compensation_type": "monthly"}
+    [installation_data] => {"ac_units": 2, "area_sqm": 50, "services": ["pos", "ac", "kitchen"], "terminal_count": 2, "kitchen_item_count": 3}
+    [txn_order_id] => 526142999
+    [merchant_order_id] => 127_1778867857
+    [amount_cents] => 34628700
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 127
+entered success block for order 127
+entered success block for order 127
+entered success block for order 127
+entered success block for order 127
+entered success block for order 127
+entered success block for order 127
