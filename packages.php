@@ -16,6 +16,8 @@ $business     = $w["business_type"] ?? "";
 $size         = trim((string)($w["size"] ?? ""));
 $indoorSeats  = (int)($w["indoor_seats"]  ?? 0);
 $outdoorSeats = (int)($w["outdoor_seats"] ?? 0);
+$indoorTables  = (int)($w["indoor_tables"]  ?? 0);
+$outdoorTables = (int)($w["outdoor_tables"] ?? 0);
 $modules  = $w["modules"] ?? [];
 
 $budget   = (int)($w["budget"] ?? 0);
@@ -1301,7 +1303,7 @@ function build_furniture_cart_by_budget($catalog, $size, $cap){
 
   $cart = ["items" => []];
 
-$setQty = max(1, (int)ceil((int)($GLOBALS["indoorSeats"] ?? 0) / 4));
+$setQty = max(1, (int)($GLOBALS["indoorTables"] ?? ceil((int)($GLOBALS["indoorSeats"] ?? 0) / 4)));
   $setOptions = pick_top_dining_set_options($catalog, $restaurantType, $size, $tier, 3);
 
   if (!empty($setOptions)) {

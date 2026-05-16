@@ -1245,3 +1245,61 @@ entered success block for order 127
 entered success block for order 127
 entered success block for order 127
 entered success block for order 127
+Array
+(
+    [time] => 2026-05-16 00:25:58
+    [order_id] => 128
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 210
+    [labor_data] => {"roles": {"chef": 3, "host": 0, "busboy": 0, "waiter": 2, "barista": 0, "cashier": 0, "cleaner": 0, "security": 0, "kitchen_helper": 0}, "salary_amount": 0, "compensation_type": "monthly"}
+    [installation_data] => {"ac_units": 2, "area_sqm": 50, "services": ["pos", "electrical", "ac"], "terminal_count": 4, "kitchen_item_count": 3}
+    [txn_order_id] => 526315048
+    [merchant_order_id] => 128_1778883901
+    [amount_cents] => 41428300
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 128
+entered success block for order 128
+entered success block for order 128
+entered success block for order 128
+entered success block for order 128
+entered success block for order 128
+entered success block for order 128
+Array
+(
+    [time] => 2026-05-16 00:33:18
+    [order_id] => 129
+    [success] => 1
+    [pending] => 
+    [payment_status_before] => pending
+    [business_user_id] => 210
+    [labor_data] => {"roles": {"chef": 2, "host": 0, "busboy": 0, "waiter": 2, "barista": 0, "cashier": 2, "cleaner": 0, "security": 0, "kitchen_helper": 0}, "salary_amount": 0, "compensation_type": "monthly"}
+    [installation_data] => {"ac_units": 8, "area_sqm": 300, "services": ["pos", "network", "ac", "kitchen"], "terminal_count": 4, "kitchen_item_count": 5}
+    [txn_order_id] => 526317688
+    [merchant_order_id] => 129_1778884354
+    [amount_cents] => 44345500
+    [raw_success_value] => 1
+    [raw_pending_value] => 
+    [data_message] => Approved
+    [txn_response_code] => 
+    [acq_response_code] => 
+    [owner] => 2206214
+)
+
+--------------------
+ENTERED !alreadyPaid block for order 129
+entered success block for order 129
+entered success block for order 129
+entered success block for order 129
+entered success block for order 129
+entered success block for order 129
+entered success block for order 129

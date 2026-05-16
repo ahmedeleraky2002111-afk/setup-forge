@@ -542,25 +542,25 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       </div>
 
       <!-- Outdoor -->
-      <div class="sf-seat-card <?= ($outdoorSeats > 0) ? 'is-active' : '' ?>" id="outdoor-card">
+      <div class="sf-seat-card <?= ($outdoorTables > 0) ? 'is-active' : '' ?>" id="outdoor-card">
         <div class="sf-seat-card-head">
           <div class="sf-seat-card-icon outdoor">
             <i class="bi bi-sun-fill"></i>
           </div>
-          <div class="sf-seat-card-title">Outdoor</div>
+          <div class="sf-seat-card-title">Outdoor Tables</div>
           <div class="sf-seat-card-hint">Terrace, garden &amp; rooftop</div>
         </div>
 
         <div class="sf-seat-stepper">
-          <button type="button" class="sf-step-btn" data-field="outdoor_seats" data-delta="-1">−</button>
-          <input type="number" class="sf-seat-num-input" name="outdoor_seats" id="outdoor_seats"
-                 min="0" value="<?= h($outdoorSeats) ?>">
-          <button type="button" class="sf-step-btn" data-field="outdoor_seats" data-delta="1">+</button>
+          <button type="button" class="sf-step-btn" data-field="outdoor_tables" data-delta="-1">−</button>
+          <input type="number" class="sf-seat-num-input" name="outdoor_tables" id="outdoor_tables"
+                 min="0" value="<?= h($outdoorTables) ?>">
+          <button type="button" class="sf-step-btn" data-field="outdoor_tables" data-delta="1">+</button>
         </div>
 
         <div class="sf-seat-presets">
-          <?php foreach ([0, 10, 20, 30, 40, 60] as $p): ?>
-          <button type="button" class="sf-seat-preset" data-field="outdoor_seats" data-val="<?= $p ?>"><?= $p ?></button>
+          <?php foreach ([0, 3, 5, 8, 10, 15] as $p): ?>
+          <button type="button" class="sf-seat-preset" data-field="outdoor_tables" data-val="<?= $p ?>"><?= $p ?></button>
           <?php endforeach; ?>
         </div>
       </div>
@@ -592,7 +592,7 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
     <!-- Total bar -->
     <div class="sf-seat-total-bar">
-      <div class="sf-seat-total-number" id="total-seats"><?= max(1, $indoorSeats > 0 ? $indoorSeats : 20) + $outdoorSeats ?></div>
+      <div class="sf-seat-total-number" id="total-seats"><?= (max(1, $indoorTables > 0 ? $indoorTables : 5) + $outdoorTables) * 4 ?></div>
       <div class="sf-seat-total-text">total seats</div>
       <div class="sf-seat-total-size" id="size-label"></div>
     </div>
@@ -607,22 +607,22 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 <script>
 (function(){
   const inputs = {
-    indoor_seats:  document.getElementById('indoor_seats'),
-    outdoor_seats: document.getElementById('outdoor_seats'),
-    area_sqm:      document.getElementById('area_sqm'),
+    indoor_tables:  document.getElementById('indoor_tables'),
+    outdoor_tables: document.getElementById('outdoor_tables'),
+    area_sqm:       document.getElementById('area_sqm'),
   };
   const totalEl = document.getElementById('total-seats');
   const sizeEl  = document.getElementById('size-label');
 
 function getMin(field){
-    if (field === 'indoor_seats') return 1;
+    if (field === 'indoor_tables') return 1;
     if (field === 'area_sqm') return 10;
     return 0;
   }
   function updateTotal(){
-    const indoor  = parseInt(inputs.indoor_seats.value)  || 0;
-    const outdoor = parseInt(inputs.outdoor_seats.value) || 0;
-    const total   = indoor + outdoor;
+    const indoorT  = parseInt(inputs.indoor_tables.value)  || 0;
+    const outdoorT = parseInt(inputs.outdoor_tables.value) || 0;
+    const total    = (indoorT + outdoorT) * 4;
     totalEl.textContent = total;
 
     if      (total <= 20)  sizeEl.textContent = 'Small café-style space';
@@ -634,8 +634,8 @@ function getMin(field){
       btn.classList.toggle('is-active', parseInt(inputs[btn.dataset.field].value) === parseInt(btn.dataset.val));
     });
 
-    document.getElementById('indoor-card').classList.toggle('is-active',  indoor  > 0);
-    document.getElementById('outdoor-card').classList.toggle('is-active', outdoor > 0);
+    document.getElementById('indoor-card').classList.toggle('is-active',  indoorT  > 0);
+    document.getElementById('outdoor-card').classList.toggle('is-active', outdoorT > 0);
   }
 
   document.querySelectorAll('.sf-step-btn').forEach(btn => {

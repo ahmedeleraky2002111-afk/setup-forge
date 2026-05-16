@@ -24,15 +24,13 @@
       <div class="d-none d-lg-flex justify-content-center flex-grow-1">
         <ul class="navbar-nav align-items-center gap-3">
 
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle sf-navlink"
-              href="../products.php"
-              data-bs-toggle="dropdown">
+          <li class="nav-item ">
+            <a class="nav-link  sf-navlink"
+              href="products.php"
+              >
               Products
             </a>
-            <ul class="dropdown-menu sf-dropdown">
-              <li><span class="dropdown-item-text text-muted">Coming soon</span></li>
-            </ul>
+          
           </li>
 
           <li class="nav-item">
