@@ -1312,9 +1312,9 @@ border-radius: 0;
 }
 
 .sf-step3-wrap {
-  max-width: 740px;
-  margin: 0 auto;
-  padding: 0 16px 40px;
+  max-width: 100%;
+  margin: -60px 0 0;
+  padding: 0 0 40px;
 }
 
 .sf-step3-title {
@@ -1441,20 +1441,29 @@ border-radius: 0;
 
 .sf-seat-preset {
   padding: 5px 13px;
-  border-radius: 5px;
-  border: 1.5px solid rgba(0,76,172,.12);
-  background: #f4f6fa;
+  border-radius: 0px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: #fff;
   color: #374151;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background .14s, color .14s, border-color .14s;
+  letter-spacing: .02em;
+  transition: all .15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
 }
-.sf-seat-preset:hover,
+.sf-seat-preset:hover {
+  border-color: #004cac;
+  color: #004cac;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,76,172,.12);
+  transform: translateY(-1px);
+}
 .sf-seat-preset.is-active {
-  background: var(--sf-primary);
+  background: #004cac;
   color: #fff;
-  border-color: var(--sf-primary);
+  border-color: #004cac;
+  box-shadow: 0 2px 8px rgba(0,76,172,.20);
 }
 
 .sf-seat-total-bar {
@@ -4129,10 +4138,14 @@ font-weight: 550 !important;
   margin: 0 auto;
 }
 
-.sf-step1-copy .sf-name-title{
+.sf-step1-copy .sf-name-title,
+.sf-wiz-grid .sf-name-title {
   text-align: center;
   margin-left: auto;
   margin-right: auto;
+ font-size: clamp(1.6rem,2.2vw,2.2rem);
+   font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 .sf-step1-copy .sf-name-sub{
@@ -4155,7 +4168,7 @@ font-weight: 550 !important;
   gap: 28px;
   width: 100%;
   max-width: 868px;
-  margin: 28px auto 0;
+  margin: 0px auto 0;
 }
 
 .sf-biz-card-landscape{
@@ -5029,6 +5042,25 @@ font-weight: 550 !important;
   justify-content: center;
   pointer-events: none;
 }
+.sf-biz-icon-custom,
+.sf-biz-cafe-icon,
+.sf-biz-gym-icon,
+.sf-biz-office-icon{
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.sf-biz-icon-custom img:first-child { width: 44px; height: 44px; object-fit: contain; }
+.sf-biz-icon-custom img:last-child  { width: 34px; height: 34px; object-fit: contain; margin-left: -16px; transform: rotate(-45deg); }
+.sf-biz-cafe-icon img  { width: 40px; height: 40px; object-fit: contain; }
+.sf-biz-gym-icon img   { width: 44px; height: 34px; object-fit: contain; }
+.sf-biz-office-icon img{ width: 38px; height: 38px; object-fit: contain; }
 
 /* restaurant fork + knife */
 .sf-step1-layout-wrap .sf-biz-icon-custom{
@@ -5175,7 +5207,18 @@ font-weight: 550 !important;
   height: 34px;
 }
 
+.sf-biz-icon-custom img{ transition: transform 0.25s ease; }
+.sf-biz-card-landscape:hover .sf-biz-icon-custom img:first-child{ transform: rotate(-40deg) translateY(-2px) translateX(5px); }
+.sf-biz-card-landscape:hover .sf-biz-icon-custom img:last-child{ transform: rotate(0deg) translateY(-2px) translateX(-2px); }
 
+.sf-biz-cafe-icon img{ transition: transform 0.25s ease; }
+.sf-biz-card-landscape:hover .sf-biz-cafe-icon img{ transform: rotate(-10deg) translateY(-3px) scale(1.05); }
+
+.sf-biz-gym-icon img{ transition: transform 0.35s ease; }
+.sf-biz-card-landscape:hover .sf-biz-gym-icon img{ transform: translateY(-3px) scale(1.2); }
+
+.sf-biz-office-icon img{ transition: transform 0.25s ease; }
+.sf-biz-card-landscape:hover .sf-biz-office-icon img{ transform: scale(1.25); }
 /* =========================
    STEP 2 CENTER FIX
 ========================= */
@@ -5292,8 +5335,8 @@ font-weight: 550 !important;
 
 .sf-step5-form .sf-actions{
   width: 100%;
-  max-width: 520px; /* matches budget field width */
-  margin: 28px auto 0;
+  max-width: 720px;
+  margin: 28px 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -6055,4 +6098,183 @@ font-weight: 550 !important;
 .sf-hc-view-btn:hover {
   background: rgba(0,76,172,.08);
   border-color: rgba(0,76,172,.20);
+}
+
+/* ========================
+   WIZARD NEW LAYOUT
+======================== */
+.sf-wiz-progress {
+  display: flex;
+  gap: 0;
+  margin: 24px 0 90px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  padding-bottom: 16px;
+}
+.sf-wiz-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -17px;
+}
+.sf-wiz-step.is-active { border-bottom-color: #004cac; }
+.sf-wiz-step.is-done   { border-bottom-color: rgba(0,76,172,.25); }
+.sf-wiz-num   { font-size: 11px; color: #aaa; }
+.sf-wiz-label { font-size: 12px; color: #aaa; }
+.sf-wiz-step.is-active .sf-wiz-num,
+.sf-wiz-step.is-active .sf-wiz-label { color: #004cac; font-weight: 600; }
+.sf-wiz-step.is-done .sf-wiz-label,
+.sf-wiz-step.is-done .sf-wiz-num { color: #999; }
+
+.sf-wiz-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 500px !important;
+  gap: 40px;
+  align-items: start;
+}
+
+.sf-wiz-summary {
+  position: sticky;
+  top: 110px;
+  width: 100%;
+}
+
+.sf-wiz-summary-inner {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.09);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+}
+
+.sf-wiz-summary {
+  position: sticky;
+  top: 100px;
+}
+.sf-wiz-summary-inner {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.09);
+  border-radius: 16px;
+  padding: 20px;
+}
+.sf-wiz-summary-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+}
+.sf-wiz-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  font-size: 13px;
+}
+.sf-wiz-summary-row:last-of-type { border-bottom: none; }
+.sf-wiz-summary-row span  { color: #6b7280; }
+.sf-wiz-summary-row strong { color: #111; font-weight: 600; text-align: right; }
+.sf-wiz-summary-note {
+  margin-top: 14px;
+  font-size: 11px;
+  color: #aaa;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.5;
+} 
+
+/* ========================
+   WIZARD GRID OVERRIDE
+======================== */
+.sf-wiz-grid .sf-card-body {
+  display: block !important;
+}
+
+.sf-wiz-grid .sf-name-layout {
+  display: block !important;
+}
+
+.sf-wiz-grid section {
+  display: block !important;
+}
+
+/* ========================
+   STEP 1 IN NEW GRID
+======================== */
+.sf-wiz-grid .sf-biz-landscape-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.sf-wiz-grid .sf-biz-card-shell {
+  width: 100% !important;
+}
+
+.sf-wiz-grid .sf-step1-layout {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+/* ========================
+   STEP 2 IN NEW GRID
+======================== */
+.sf-wiz-grid .sf-restaurant-type-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 12px 0 0 !important;
+}
+
+.sf-wiz-grid .sf-restaurant-card-shell {
+  width: 100% !important;
+}
+
+.sf-wiz-grid .sf-actions {
+  justify-content: space-between;
+}
+
+
+/* ========================
+   STEP 3 SLIDERS
+======================== */
+.sf-slider-block {
+  margin-bottom: 32px;
+}
+
+.sf-slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.sf-slider-label {
+  font-size: .88rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.sf-slider-val {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #004cac;
+  line-height: 1;
+}
+
+.sf-slider-range {
+  width: 100%;
+  height: 4px;
+  accent-color: #004cac;
+  cursor: pointer;
 }

@@ -317,3 +317,13 @@ Last updated: May 2026
 - Cloud kitchen: no premium combi oven
 - Fast food: no luxury dining sets
 - Premium dining: higher-end kitchen equipment preferred
+
+## packages.php UI Redesign (Planned)
+- Each module divided into sections by product type 
+  (e.g. Kitchen → Ovens, Fridges, Grills as separate sections)
+- Each section shows all products as equal cards side by side
+- Recommended product has a "Recommended" badge and appears first (leftmost)
+- Alternatives are shown as full cards next to the recommended, not in card footer
+- "View other sellers" stays on every card
+- No logic changes — same cart, session, quantities, tiers
+- Same applies to all modules: kitchen, pos, furniture, ac

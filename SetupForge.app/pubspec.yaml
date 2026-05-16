@@ -1,0 +1,45 @@
+name: setup_forge
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+  shared_preferences: ^2.2.3
+  provider: ^6.1.2
+  video_player: ^2.8.2
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/restaurant.mp4
+    - assets/cafe.mp4
+    - assets/office.mp4
+    - assets/gym.mp4
+    - assets/logo.png
+    - assets/SetupForge.mp4
+    - assets/size_small.png
+    - assets/size_medium.png
+    - assets/size_large.png
+
+# ✅ MUST be OUTSIDE the flutter: section (top-level)
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/logo.png"
+  adaptive_icon_background: "#004CAC"
+  adaptive_icon_foreground: "assets/logo.png"

@@ -162,7 +162,7 @@ $modules = array_values(array_filter($modules, function($m){
 $moduleTiers = $w["module_tiers"] ?? []; // ✅ per-module tiers
 $budget = (int)($w["budget"] ?? 0);
 
-$businessTypes = ["Restaurant","Café","Office","Gym","Salon"];
+$businessTypes = ["Restaurant","Café","Gym","Salon"];
 $restaurantTypes = [
   "fast_food" => "Fast Food",
   "standard_dining" => "Casual Dining",
@@ -227,64 +227,64 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 <main class="sf-setup">
   <div class="sf-setup-container">
 
-    <div class="sf-setup-grid">
-      <!-- LEFT: Main wizard card -->
+    <!-- PROGRESS BAR -->
+    <div class="sf-wiz-progress">
+      <?php
+        $steps = [0=>"Name",1=>"Type",2=>"Style",3=>"Seats",5=>"Budget",6=>"Services",7=>"Staff"];
+        $display = [0,1,2,3,5,6,7];
+        foreach($display as $i => $s):
+          $active = ($step === $s);
+          $done   = ($step > $s);
+      ?>
+      <div class="sf-wiz-step <?= $done ? 'is-done' : ($active ? 'is-active' : '') ?>">
+        <div class="sf-wiz-line"></div>
+        <span class="sf-wiz-num">0<?= $i+1 ?></span>
+        <span class="sf-wiz-label"><?= $steps[$s] ?></span>
+      </div>
+      <?php endforeach; ?>
+    </div>
+
+    <!-- TWO COLUMN GRID -->
+    <div class="sf-wiz-grid">
+
+      <!-- LEFT -->
       <section class="sf-card sf-no-box">
         <div class="sf-card-body">
 
 <?php if ($step === 0): ?>
 
-  <section class="sf-name-step">
-  <div class="sf-name-layout">
+<section style="padding:40px 0;">
+    <h1 class="sf-name-title" style="text-align:left; font-size:clamp(2rem,3vw,3rem); margin-bottom:8px;">What's your business name?</h1>
+  <p class="sf-name-sub" style="text-align:left; margin-bottom:32px;">We'll use it to personalize your setup experience.</p>
 
-    <div class="sf-name-copy">
-      <h1 class="sf-name-title">What’s your business name?</h1>
-      <p class="sf-name-sub">We’ll use it to personalize your setup experience.</p>
+  <form method="post" class="sf-name-form" style="align-items:flex-start;">
+    <input type="hidden" name="step" value="0">
 
-      <form method="post" class="sf-name-form">
-        <input type="hidden" name="step" value="0">
-
-        <div class="sf-input-wrap">
-          <input
-            type="text"
-            name="business_name"
-            class="sf-input-lux"
-            placeholder=" "
-            value="<?= h($businessName) ?>"
-            required
-            autofocus
-          >
-          <label class="sf-input-label">Business name</label>
-        </div>
-
-        <button class="sf-name-btn" type="submit">
-          Next <span aria-hidden="true">→</span>
-        </button>
-      </form>
+    <div class="sf-input-wrap">
+      <input
+        type="text"
+        name="business_name"
+        class="sf-input-lux"
+        placeholder=" "
+        value="<?= h($businessName) ?>"
+        required
+        autofocus
+      >
+      <label class="sf-input-label">Business name</label>
     </div>
 
-    <div class="sf-name-visual">
-      <div class="sf-building">
-  <img src="assets/images/building-default.png" alt="">
-
-  <!-- Overlay text -->
-  <div class="sf-building-sign" id="buildingSign">
-    Your Business
-  </div>
-</div>
-    </div>
-
-  </div>
+    <button class="sf-name-btn" type="submit">
+      Next <span aria-hidden="true">→</span>
+    </button>
+  </form>
 </section>
 
 <?php elseif ($step === 1): ?>
 
-<section class="sf-name-step">
-<div class="sf-name-layout sf-step1-layout-wrap">
-<div class="sf-name-copy sf-step1-copy">
-  <div class="sf-step1-layout mx-auto text-center">
+<section style="padding-top:0; margin-top:-60px;">
+    <div class="sf-step1-layout mx-auto text-center">
           <h1 class="sf-name-title">What type of business are you building?</h1>
-        <p class="sf-name-sub">This helps us tailor your setup experience.</p>
+<p class="sf-name-sub" style="margin-bottom:12px; text-align:center; margin-left:auto; margin-right:auto;">This helps us tailor your setup experience.</p>
 
         <form method="post">
           <input type="hidden" name="step" value="1">
@@ -300,8 +300,7 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       $videoMap = [
         "Restaurant" => "assets/videos/RestaurantP.mp4",
         "Café"       => "assets/videos/CafeP.mp4",
-        "Office"     => "assets/videos/OfficeP.mp4",
-        "Salon"      => "assets/videos/SalonP.mp4",
+        "Salon"      => "assets/videos/OfficeP.mp4",
         "Gym"        => "assets/videos/GymP.mp4",
       ];
     ?>
@@ -332,8 +331,7 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
               $icon = match($t){
                 "Restaurant" => "bi-fork-knife",
                 "Café"       => "bi-cup-hot",
-                "Office"     => "bi-building",
-                "Salon"      => "bi-scissors",
+                "Salon"     => "bi-building",
                 "Gym"        => "bi-activity",
                 default      => "bi-grid"
               };
@@ -381,7 +379,7 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     <img src="assets/icons/dumbbell.svg" alt="">
   </div>
 <?php endif; ?>
-<?php if ($t === "Office"): ?>
+<?php if ($t === "Salon"): ?>
   <div class="sf-biz-office-icon" aria-hidden="true">
     <img src="assets/icons/office.svg" alt="">
   </div>
@@ -403,13 +401,6 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 </div>
         </form>
       </div>
-    </div>
-
-    <div class="sf-name-visual">
-      <!-- empty for now -->
-    </div>
-
-  </div>
 </section>
 
   <!-- Hover-play JS (scoped) -->
@@ -436,12 +427,9 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   
   <?php elseif ($step === 2): ?>
 
-<section class="sf-name-step">
- <div class="sf-name-layout sf-step2-layout-wrap">
-<div class="sf-name-copy sf-step2-copy">
-      <div class="sf-step2-layout">
-        <h1 class="sf-name-title">What type of restaurant are you building?</h1>
-        <p class="sf-name-sub">This helps us tailor the layout, equipment, and dining experience.</p>
+<section style="padding-top:0; margin-top:-60px;">
+<h1 class="sf-name-title" style="margin-bottom:8px; text-align:center;">What type of restaurant are you building?</h1>
+  <p class="sf-name-sub" style="margin-bottom:12px; text-align:center;">This helps us tailor the layout, equipment, and dining experience.</p>
 
         <form method="post">
           <input type="hidden" name="step" value="2">
@@ -496,97 +484,69 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   <button class="sf-btn-main sf-btn-next" type="submit">Next →</button>
 </div>
         </form>
-      </div>
-    </div>
-
-    <div class="sf-name-visual">
-      <!-- empty for now -->
-    </div>
-
-  </div>
-</section>
+      </section>
 
   <?php elseif ($step === 3): ?>
 
 <div class="sf-step3-wrap">
-  <h1 class="sf-step3-title">How many seats?</h1>
-  <p class="sf-step3-sub">We'll use this to recommend the right furniture, equipment, and layout for your space.</p>
+  <h1 class="sf-name-title" style="text-align:left; margin-bottom:8px;">How many seats?</h1>
+  <p class="sf-name-sub" style="text-align:left; margin-bottom:20px;">We'll use this to recommend the right furniture, equipment, and layout for your space.</p>
+  
 
   <form method="post" class="sf-step3-form">
     <input type="hidden" name="step" value="3">
 
-    <div class="sf-seat-cards-row">
-
-      <!-- Indoor -->
-      <div class="sf-seat-card <?= ($indoorTables > 0) ? 'is-active' : '' ?>" id="indoor-card">
-        <div class="sf-seat-card-head">
-          <div class="sf-seat-card-icon indoor">
-            <i class="bi bi-house-door-fill"></i>
-          </div>
-          <div class="sf-seat-card-title">Indoor Tables</div>
-          <div class="sf-seat-card-hint">Dining room, bar &amp; lounge</div>
-        </div>
-
-        <div class="sf-seat-stepper">
-          <button type="button" class="sf-step-btn" data-field="indoor_tables" data-delta="-1">−</button>
-          <input type="number" class="sf-seat-num-input" name="indoor_tables" id="indoor_tables"
-                 min="1" value="<?= $indoorTables > 0 ? h($indoorTables) : 5 ?>" required>
-          <button type="button" class="sf-step-btn" data-field="indoor_tables" data-delta="1">+</button>
-        </div>
-
-        <div class="sf-seat-presets">
-          <?php foreach ([4, 6, 10, 15, 20, 25] as $p): ?>
-          <button type="button" class="sf-seat-preset" data-field="indoor_tables" data-val="<?= $p ?>"><?= $p ?></button>
-          <?php endforeach; ?>
-        </div>
+    <!-- Indoor Tables -->
+    <div class="sf-slider-block">
+      <div class="sf-slider-head">
+        <span class="sf-slider-label">Indoor Tables</span>
+        <span class="sf-slider-val" id="indoor-display"><?= $indoorTables > 0 ? h($indoorTables) : 5 ?></span>
       </div>
-
-      <!-- Outdoor -->
-      <div class="sf-seat-card <?= ($outdoorTables > 0) ? 'is-active' : '' ?>" id="outdoor-card">
-        <div class="sf-seat-card-head">
-          <div class="sf-seat-card-icon outdoor">
-            <i class="bi bi-sun-fill"></i>
-          </div>
-          <div class="sf-seat-card-title">Outdoor Tables</div>
-          <div class="sf-seat-card-hint">Terrace, garden &amp; rooftop</div>
-        </div>
-
-        <div class="sf-seat-stepper">
-          <button type="button" class="sf-step-btn" data-field="outdoor_tables" data-delta="-1">−</button>
-          <input type="number" class="sf-seat-num-input" name="outdoor_tables" id="outdoor_tables"
-                 min="0" value="<?= h($outdoorTables) ?>">
-          <button type="button" class="sf-step-btn" data-field="outdoor_tables" data-delta="1">+</button>
-        </div>
-
-        <div class="sf-seat-presets">
-          <?php foreach ([0, 3, 5, 8, 10, 15] as $p): ?>
-          <button type="button" class="sf-seat-preset" data-field="outdoor_tables" data-val="<?= $p ?>"><?= $p ?></button>
-          <?php endforeach; ?>
-        </div>
+      <input type="range" class="sf-slider-range" id="indoor_range"
+             min="1" max="50" step="1"
+             value="<?= $indoorTables > 0 ? h($indoorTables) : 5 ?>">
+      <input type="number" name="indoor_tables" id="indoor_tables" hidden
+             min="1" value="<?= $indoorTables > 0 ? h($indoorTables) : 5 ?>" required>
+      <div class="sf-seat-presets" style="margin-top:10px;">
+        <?php foreach ([4, 6, 10, 15, 20, 25] as $p): ?>
+        <button type="button" class="sf-seat-preset" data-field="indoor_tables" data-val="<?= $p ?>"><?= $p ?></button>
+        <?php endforeach; ?>
       </div>
-
     </div>
+
+    <!-- Outdoor Tables -->
+    <div class="sf-slider-block">
+      <div class="sf-slider-head">
+        <span class="sf-slider-label">Outdoor Tables</span>
+        <span class="sf-slider-val" id="outdoor-display"><?= h($outdoorTables) ?></span>
+      </div>
+      <input type="range" class="sf-slider-range" id="outdoor_range"
+             min="0" max="50" step="1"
+             value="<?= h($outdoorTables) ?>">
+      <input type="number" name="outdoor_tables" id="outdoor_tables" hidden
+             min="0" value="<?= h($outdoorTables) ?>">
+      <div class="sf-seat-presets" style="margin-top:10px;">
+        <?php foreach ([0, 3, 5, 8, 10, 15] as $p): ?>
+        <button type="button" class="sf-seat-preset" data-field="outdoor_tables" data-val="<?= $p ?>"><?= $p ?></button>
+        <?php endforeach; ?>
+      </div>
+    </div>
+
     <!-- Area -->
-    <div class="sf-seat-cards-row" style="margin-top:1rem">
-      <div class="sf-seat-card <?= ($areaSqm > 0) ? 'is-active' : '' ?>" id="area-card">
-        <div class="sf-seat-card-head">
-          <div class="sf-seat-card-icon indoor">
-            <i class="bi bi-arrows-angle-expand"></i>
-          </div>
-          <div class="sf-seat-card-title">Restaurant Area</div>
-          <div class="sf-seat-card-hint">Total floor space in m²</div>
-        </div>
-        <div class="sf-seat-stepper">
-          <button type="button" class="sf-step-btn" data-field="area_sqm" data-delta="-10">−</button>
-          <input type="number" class="sf-seat-num-input" name="area_sqm" id="area_sqm"
-                 min="10" step="10" value="<?= $areaSqm > 0 ? h($areaSqm) : 50 ?>">
-          <button type="button" class="sf-step-btn" data-field="area_sqm" data-delta="10">+</button>
-        </div>
-        <div class="sf-seat-presets">
-          <?php foreach ([30, 50, 80, 120, 200, 300] as $p): ?>
-          <button type="button" class="sf-seat-preset" data-field="area_sqm" data-val="<?= $p ?>"><?= $p ?>m²</button>
-          <?php endforeach; ?>
-        </div>
+    <div class="sf-slider-block">
+      <div class="sf-slider-head">
+        <span class="sf-slider-label">Restaurant Area (m²)</span>
+        <span class="sf-slider-val" id="area-display"><?= $areaSqm > 0 ? h($areaSqm) : 50 ?></span>
+      </div>
+      <input type="range" class="sf-slider-range" id="area_range"
+             min="10" max="300" step="1"
+             value="<?= $areaSqm > 0 ? h($areaSqm) : 50 ?>">
+      <input type="number" name="area_sqm" id="area_sqm" hidden
+             min="10" step="1" value="<?= $areaSqm > 0 ? h($areaSqm) : 50 ?>">
+      <div class="sf-seat-presets" style="margin-top:10px;">
+        <?php foreach ([30, 50, 80, 120, 200, 300] as $p): ?>
+        <button type="button" class="sf-seat-preset" data-field="area_sqm" data-val="<?= $p ?>"><?= $p ?>m²</button>
+        <?php endforeach; ?>
       </div>
     </div>
 
@@ -611,53 +571,56 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     outdoor_tables: document.getElementById('outdoor_tables'),
     area_sqm:       document.getElementById('area_sqm'),
   };
+  const ranges = {
+    indoor_tables:  document.getElementById('indoor_range'),
+    outdoor_tables: document.getElementById('outdoor_range'),
+    area_sqm:       document.getElementById('area_range'),
+  };
+  const displays = {
+    indoor_tables:  document.getElementById('indoor-display'),
+    outdoor_tables: document.getElementById('outdoor-display'),
+    area_sqm:       document.getElementById('area-display'),
+  };
   const totalEl = document.getElementById('total-seats');
   const sizeEl  = document.getElementById('size-label');
 
-function getMin(field){
-    if (field === 'indoor_tables') return 1;
-    if (field === 'area_sqm') return 10;
-    return 0;
-  }
+  function getMin(field){ return field === 'indoor_tables' ? 1 : field === 'area_sqm' ? 10 : 0; }
+
   function updateTotal(){
     const indoorT  = parseInt(inputs.indoor_tables.value)  || 0;
     const outdoorT = parseInt(inputs.outdoor_tables.value) || 0;
     const total    = (indoorT + outdoorT) * 4;
     totalEl.textContent = total;
-
     if      (total <= 20)  sizeEl.textContent = 'Small café-style space';
     else if (total <= 50)  sizeEl.textContent = 'Mid-size restaurant';
     else if (total <= 100) sizeEl.textContent = 'Large restaurant';
     else                   sizeEl.textContent = 'Venue-scale setup';
 
     document.querySelectorAll('.sf-seat-preset').forEach(btn => {
-      btn.classList.toggle('is-active', parseInt(inputs[btn.dataset.field].value) === parseInt(btn.dataset.val));
+      btn.classList.toggle('is-active', parseInt(inputs[btn.dataset.field]?.value) === parseInt(btn.dataset.val));
     });
-
-    document.getElementById('indoor-card').classList.toggle('is-active',  indoorT  > 0);
-    document.getElementById('outdoor-card').classList.toggle('is-active', outdoorT > 0);
   }
 
-  document.querySelectorAll('.sf-step-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const input = inputs[btn.dataset.field];
-      const min   = getMin(btn.dataset.field);
-      input.value = Math.max(min, (parseInt(input.value) || 0) + parseInt(btn.dataset.delta));
+  Object.keys(ranges).forEach(field => {
+    ranges[field].addEventListener('input', () => {
+      const v = ranges[field].value;
+      inputs[field].value = v;
+      displays[field].textContent = v;
       updateTotal();
+      document.querySelectorAll('.sf-seat-preset').forEach(btn => {
+        if(btn.dataset.field === field)
+          btn.classList.toggle('is-active', parseInt(v) === parseInt(btn.dataset.val));
+      });
     });
   });
 
   document.querySelectorAll('.sf-seat-preset').forEach(btn => {
     btn.addEventListener('click', () => {
-      inputs[btn.dataset.field].value = Math.max(getMin(btn.dataset.field), parseInt(btn.dataset.val));
-      updateTotal();
-    });
-  });
-
-  Object.entries(inputs).forEach(([field, input]) => {
-    input.addEventListener('input', updateTotal);
-    input.addEventListener('change', () => {
-      if ((parseInt(input.value) || 0) < getMin(field)) input.value = getMin(field);
+      const field = btn.dataset.field;
+      const val = Math.max(getMin(field), parseInt(btn.dataset.val));
+      inputs[field].value = val;
+      ranges[field].value = val;
+      displays[field].textContent = val;
       updateTotal();
     });
   });
@@ -668,9 +631,9 @@ function getMin(field){
 
 <?php elseif ($step === 6): ?>
 
-<div class="sf6-step-label">Step 6 of 7</div>
-<h1 class="sf-step-title">Installation &amp; Technical Setup</h1>
-<p class="sf-step-sub">Select the services you need. Certified local companies will come to your location and handle everything.</p>
+<h1 class="sf-name-title" style="margin-bottom:8px; margin-top:-60px;">Installation &amp; Technical Setup</h1>
+<p class="sf-name-sub" style="margin-bottom:20px;">Select the services you need. Certified local companies will come to your location and handle everything.</p>
+
 
 <form method="post" id="sf6-form">
 <input type="hidden" name="step" value="6">
@@ -733,7 +696,7 @@ function getMin(field){
 <p class="sf6-info-note"><i class="bi bi-building"></i> These services are fulfilled by verified local companies, not individual workers.</p>
 
 <p class="sf6-foot-summary" id="sf6-count-text">0 services selected</p>
-<div class="sf6-footer-bar">
+<div class="sf-actions" style="margin-top:24px;">
   <a class="sf-btn-main sf-btn-back" href="setup.php?step=5">← Back</a>
   <button class="sf-btn-main sf-btn-next" type="submit">Continue →</button>
 </div>
@@ -756,9 +719,8 @@ function getMin(field){
 
 <?php elseif ($step === 7): ?>
 
-<div class="sf6-step-label">Step 7 of 7</div>
-<h1 class="sf-step-title">Staffing</h1>
-<p class="sf-step-sub">Tell us how many staff you need for daily operations. Set any role to 0 to skip it.</p>
+<h1 class="sf-name-title" style="margin-bottom:8px; margin-top:-60px;">Staffing</h1>
+<p class="sf-name-sub" style="margin-bottom:20px;">Tell us how many staff you need for daily operations. Set any role to 0 to skip it.</p>
 
 <form method="post" id="sf7-form">
 <input type="hidden" name="step" value="7">
@@ -903,7 +865,7 @@ function getMin(field){
 </div>
 
 <p class="sf6-foot-summary" id="sf7-count-text">0 staff total</p>
-<div class="sf6-footer-bar">
+<div class="sf-actions" style="margin-top:24px;">
   <a class="sf-btn-main sf-btn-back" href="setup.php?step=6">← Back</a>
   <button class="sf-btn-main sf-btn-next" type="submit">Finish →</button>
 </div>
@@ -954,8 +916,8 @@ function getMin(field){
 
 <?php elseif ($step === 5): ?>
 
-<h1 class="sf-setup-hero-title">What is your budget?</h1>
-<p class="sf-card-hint">Choose the range that best fits your investment plan.</p>
+<h1 class="sf-name-title" style="margin-bottom:8px; margin-top:-60px;">What's your budget?</h1>
+<p class="sf-name-sub" style="margin-bottom:20px; text-align:center;">This helps us recommend the right products, brands, and setup tier for your business.</p>
 
 <form method="post" class="sf-step5-form">
   <input type="hidden" name="step" value="5">
@@ -1048,12 +1010,43 @@ function getMin(field){
 </script>
 
 </div>
-</section>
-
-        </div>
       </section>
-    </div>
 
+      <!-- RIGHT: Summary Panel -->
+      <aside class="sf-wiz-summary">
+        <div class="sf-wiz-summary-inner">
+          <div class="sf-wiz-summary-label">SETUP SUMMARY <span><?= $step ?>/7</span></div>
+          <div class="sf-wiz-summary-row">
+            <span>Business name</span>
+            <strong><?= $businessName !== "" ? h($businessName) : "—" ?></strong>
+          </div>
+          <div class="sf-wiz-summary-row">
+            <span>Type</span>
+            <strong><?= $business !== "" ? h($business) : "—" ?></strong>
+          </div>
+          <div class="sf-wiz-summary-row">
+            <span>Style</span>
+            <strong><?= $restaurantType !== "" ? h($restaurantTypes[$restaurantType] ?? $restaurantType) : "—" ?></strong>
+          </div>
+          <div class="sf-wiz-summary-row">
+            <span>Seats</span>
+            <strong><?= ($indoorSeats + $outdoorSeats) > 0 ? ($indoorSeats + $outdoorSeats) : "—" ?></strong>
+          </div>
+          <div class="sf-wiz-summary-row">
+            <span>Budget ceiling</span>
+            <strong><?= $budget > 0 ? number_format($budget) . " EGP" : "—" ?></strong>
+          </div>
+          <div class="sf-wiz-summary-row">
+            <span>Modules</span>
+            <strong><?= count($modules) > 0 ? implode(", ", $modules) : "—" ?></strong>
+          </div>
+          <div class="sf-wiz-summary-note">
+            <i class="bi bi-info-circle"></i> We score recommendations live — no submit button hidden away
+          </div>
+        </div>
+      </aside>
+
+    </div><!-- end sf-wiz-grid -->
   </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
