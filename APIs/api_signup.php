@@ -12,7 +12,6 @@ try {
     exit;
   }
 
-  // -------- REQUIRED --------
   $name = trim($_POST["name"] ?? "");
   $email = trim($_POST["email"] ?? "");
   $password = $_POST["password"] ?? "";
@@ -22,21 +21,21 @@ try {
     exit;
   }
 
-  // -------- OPTIONAL (your users table has these) --------
   $phone   = trim($_POST["phone"] ?? "");
   $country = trim($_POST["country"] ?? "");
   $city    = trim($_POST["city"] ?? "");
   $street  = trim($_POST["street"] ?? "");
-
-  if (!isset($pdo)) {
-    echo json_encode(["ok"=>false, "error"=>"DB connection not available (\$pdo missing)"]);
+  $user_type = trim($_POST["user_type"] ?? "business");
+if (!in_array($user_type, ["business", "customer"])) {
+    $user_type = "business";
+}
+  if (!isset($conn)) {
+    echo json_encode(["ok"=>false, "error"=>"DB connection not available"]);
     exit;
   }
 
-  // ✅ email exists check
-  $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email LIMIT 1");
-  $stmt->execute([":email"=>$email]);
-  if ($stmt->fetch()) {
+  $check = pg_query_params($conn, "SELECT id FROM users WHERE email = $1 LIMIT 1", [$email]);
+  if (pg_fetch_assoc($check)) {
     echo json_encode(["ok"=>false, "error"=>"Email already exists"]);
     exit;
   }
@@ -44,55 +43,24 @@ try {
   $hash  = password_hash($password, PASSWORD_BCRYPT);
   $token = bin2hex(random_bytes(32));
 
-  /*
-    ✅ Matches your users columns exactly:
-    id, name, email, password_hash, user_type, phone, country, city, street, status, created_at, api_token
-  */
-
-  $stmt = $pdo->prepare("
-    INSERT INTO users (
-      name,
-      email,
-      password_hash,
-      user_type,
-      phone,
-      country,
-      city,
-      street,
-      status,
-      api_token,
-      created_at
-    )
-    VALUES (
-      :n,
-      :e,
-      :h,
-      :ut,
-      :phone,
-      :country,
-      :city,
-      :street,
-      :status,
-      :t,
-      NOW()
-    )
+  $result = pg_query_params($conn, "
+    INSERT INTO users (name, email, password_hash, user_type, phone, country, city, street, status, api_token, created_at)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW())
     RETURNING id
-  ");
-
-  $stmt->execute([
-    ":n"      => $name,
-    ":e"      => $email,
-    ":h"      => $hash,
-    ":ut"     => "customer", // your enum value
-    ":phone"   => ($phone === "" ? null : $phone),
-    ":country" => ($country === "" ? null : $country),
-    ":city"    => ($city === "" ? null : $city),
-    ":street"  => ($street === "" ? null : $street),
-    ":status" => "active",   // ⚠️ must match your account_status enum values
-    ":t"      => $token,
+  ", [
+    $name,
+    $email,
+    $hash,
+    $user_type,
+    $phone ?: null,
+    $country ?: null,
+    $city ?: null,
+    $street ?: null,
+    "active",
+    $token
   ]);
 
-  $id = $stmt->fetchColumn();
+  $id = pg_fetch_result($result, 0, "id");
 
   echo json_encode([
     "ok"=>true,

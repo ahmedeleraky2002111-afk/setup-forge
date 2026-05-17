@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = "http://10.128.238.67/setupforge";
+  static const String baseUrl = "http://10.39.22.177/setupforge/APIs";
 
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -24,7 +24,7 @@ class ApiService {
     required String email,
     required String password,
   }) async {
-    final uri = Uri.parse("$baseUrl/auth/api_login.php");
+    final uri = Uri.parse("$baseUrl/api_login.php");
 
     final res = await http.post(
       uri,
@@ -45,7 +45,7 @@ class ApiService {
     required String email,
     required String password,
   }) async {
-    final uri = Uri.parse("$baseUrl/auth/api_signup.php");
+    final uri = Uri.parse("$baseUrl/api_signup.php");
 
     final res = await http.post(
       uri,
@@ -73,7 +73,7 @@ class ApiService {
     String? size,
     int? budget,
   }) async {
-    final uri = Uri.parse("$baseUrl/auth/api_signup.php");
+    final uri = Uri.parse("$baseUrl/api_signup.php");
 
     final body = <String, String>{
       "name": name,
@@ -117,7 +117,7 @@ class ApiService {
       return {"ok": false, "error": "No token"};
     }
 
-    final uri = Uri.parse("$baseUrl/auth/api_me.php");
+    final uri = Uri.parse("$baseUrl/api_me.php");
 
     final res = await http.get(
       uri,
@@ -132,48 +132,60 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> placeOrder({
+    required String token,
+    required List<Map<String, dynamic>> items,
     required String businessName,
     required String phone,
     required String address,
     String notes = '',
     String businessType = '',
-    String size = '',
-    double budget = 0,
+    String restaurantType = '',
+    int indoorTables = 0,
+    int outdoorTables = 0,
+    int areaSqm = 0,
+    String budgetRange = '',
+    List<String> installationServices = const [],
+    Map<String, int> staffCounts = const {},
+    String paymentMethod = 'cash',
     String preferredDeliveryDate = '',
-    required List<Map<String, dynamic>> items,
   }) async {
-    final token = await getToken();
-
-    if (token == null || token.isEmpty) {
-      return {"ok": false, "error": "No token found. Please login first."};
-    }
-
-    final uri = Uri.parse("$baseUrl/auth/api_place_order.php");
+    final uri = Uri.parse("$baseUrl/api_place_order.php");
 
     final payload = {
+      "items": items,
       "business_name": businessName,
       "phone": phone,
       "address": address,
       "notes": notes,
       "business_type": businessType,
-      "size": size,
-      "budget": budget,
+      "restaurant_type": restaurantType,
+      "indoor_tables": indoorTables,
+      "outdoor_tables": outdoorTables,
+      "area_sqm": areaSqm,
+      "budget_range": budgetRange,
+      "installation_services": installationServices,
+      "staff_counts": staffCounts,
+      "payment_method": paymentMethod,
       "preferred_delivery_date": preferredDeliveryDate,
-      "items": items,
     };
 
-    final res = await http.post(
-      uri,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode(payload),
-    );
+    print('[placeOrder] payload: ${jsonEncode(payload)}');
 
-    Map<String, dynamic> data;
+    final res = await http
+        .post(
+          uri,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: jsonEncode(payload),
+        )
+        .timeout(const Duration(seconds: 30));
+
+    print('[placeOrder] status: ${res.statusCode}  body: ${res.body}');
+
     try {
-      data = jsonDecode(res.body) as Map<String, dynamic>;
+      return jsonDecode(res.body) as Map<String, dynamic>;
     } catch (_) {
       return {
         "ok": false,
@@ -182,8 +194,6 @@ class ApiService {
         "status_code": res.statusCode,
       };
     }
-
-    return data;
   }
 
   Future<Map<String, dynamic>> generatePackages({
@@ -193,12 +203,16 @@ class ApiService {
     required List<String> modules,
     required Map<String, String> moduleTiers,
     String restaurantType = 'standard_dining',
+    int indoorTables = 0,
+    int outdoorTables = 0,
+    int areaSqm = 0,
+    String budgetRange = '',
   }) async {
-    final uri = Uri.parse("$baseUrl/auth/api_generate_packages.php");
+    final uri = Uri.parse("$baseUrl/api_generate_packages.php");
 
     final safeModules = modules
         .map((e) => e.trim().toLowerCase())
-        .where((e) => e == "kitchen" || e == "furniture" || e == "pos")
+        .where((e) => ["kitchen", "furniture", "pos", "ac"].contains(e))
         .toSet()
         .toList();
 
@@ -209,6 +223,10 @@ class ApiService {
       "modules": safeModules,
       "module_tiers": moduleTiers,
       "restaurant_type": restaurantType,
+      "indoor_tables": indoorTables,
+      "outdoor_tables": outdoorTables,
+      "area_sqm": areaSqm,
+      "budget_range": budgetRange,
     };
 
     try {
