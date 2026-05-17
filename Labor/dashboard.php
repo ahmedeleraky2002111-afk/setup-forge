@@ -58,13 +58,19 @@ if ($provider_type === "technician") {
     $card1Value = $jobsTodayRes ? (int)pg_fetch_result($jobsTodayRes, 0, 0) : 0;
 } else {
     /* Available labor jobs */
-    $availableJobsRes = pg_query(
-        $conn,
-        "SELECT COUNT(*) 
-         FROM jobs 
-         WHERE job_type = 'labor'
-           AND status = 'available'"
-    );
+   $laborRoleRes = pg_query_params($conn, "SELECT labor_role FROM labors WHERE user_id = $1 LIMIT 1", [$worker_id]);
+$laborRoleRow = $laborRoleRes ? pg_fetch_assoc($laborRoleRes) : null;
+$dashLaborRole = strtolower(trim($laborRoleRow['labor_role'] ?? ''));
+
+$availableJobsRes = pg_query_params(
+    $conn,
+    "SELECT COUNT(*) 
+     FROM jobs 
+     WHERE job_type = 'labor'
+       AND status = 'available'
+       AND LOWER(labor_role) = $1",
+    [$dashLaborRole]
+);
     $card1Title = "Available Jobs";
     $card1Value = $availableJobsRes ? (int)pg_fetch_result($availableJobsRes, 0, 0) : 0;
 }
@@ -166,7 +172,7 @@ if ($provider_type === "technician" && $completedJobs > 0) {
 /* Recent Jobs */
 $recentJobs = pg_query_params(
     $conn,
-    "SELECT job_id, title, location, status, budget, price, created_at
+    "SELECT job_id, title, location, status, salary_amount, price, created_at
      FROM jobs 
      WHERE worker_id = $1
        AND job_type = $2
@@ -178,7 +184,7 @@ $recentJobs = pg_query_params(
 /* Active Jobs List */
 $activeJobsList = pg_query_params(
     $conn,
-    "SELECT job_id, title, location, status, budget, price, created_at
+    "SELECT job_id, title, location, status, salary_amount, price, created_at
      FROM jobs
      WHERE worker_id = $1
        AND job_type = $2
@@ -191,7 +197,7 @@ $activeJobsList = pg_query_params(
 /* Recent Activity */
 $recentActivity = pg_query_params(
     $conn,
-    "SELECT title, status, budget, price, created_at
+    "SELECT title, status, salary_amount, price, created_at
      FROM jobs
      WHERE worker_id = $1
        AND job_type = $2
@@ -489,7 +495,7 @@ function formatTimeAgo($datetime) {
                             <?php if ($provider_type === "technician"): ?>
                                 <p><strong>Price:</strong> <?php echo number_format((float)$activeJob["price"], 2); ?> EGP</p>
                             <?php else: ?>
-                                <p><strong>Budget:</strong> <?php echo number_format((float)$activeJob["budget"], 2); ?> EGP</p>
+<p><strong>Salary:</strong> <?php echo number_format((float)$activeJob["salary_amount"], 2); ?> EGP</p>
                             <?php endif; ?>
 
                             <p><strong>Started:</strong> <?php echo !empty($activeJob["created_at"]) ? date("M j, Y", strtotime($activeJob["created_at"])) : "N/A"; ?></p>
@@ -548,7 +554,7 @@ function formatTimeAgo($datetime) {
                             <th>Location</th>
                             <th>Date</th>
                             <th>Status</th>
-                            <th><?php echo ($provider_type === 'technician') ? 'Price' : 'Budget'; ?></th>
+<th><?php echo ($provider_type === 'technician') ? 'Price' : 'Salary'; ?></th>
                             <th>Action</th>
                         </tr>
 
@@ -567,8 +573,8 @@ function formatTimeAgo($datetime) {
                                     if ($provider_type === 'technician') {
                                         echo number_format((float)$row["price"], 2) . " EGP";
                                     } else {
-                                        echo number_format((float)$row["budget"], 2) . " EGP";
-                                    }
+echo number_format((float)$row["salary_amount"], 2) . " EGP";           
+                         }
                                     ?>
                                 </td>
                                 <td>
@@ -612,7 +618,7 @@ function formatTimeAgo($datetime) {
                                     if ($provider_type === "technician") {
                                         echo number_format((float)$activity["price"], 2) . " EGP";
                                     } else {
-                                        echo number_format((float)$activity["budget"], 2) . " EGP";
+echo number_format((float)$activity["salary_amount"], 2) . " EGP";
                                     }
                                     ?>
                                 </p>

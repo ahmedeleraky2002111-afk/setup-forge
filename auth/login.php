@@ -58,6 +58,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $chk = pg_query_params($conn, "SELECT 1 FROM labors WHERE user_id = $1", [$uid]);
                     $valid = $chk && pg_num_rows($chk) > 0;
                     break;
+                    case "company":
+    $chk = pg_query_params($conn, "SELECT 1 FROM companies WHERE user_id = $1", [$uid]);
+    $valid = $chk && pg_num_rows($chk) > 0;
+    break;
 
                 case "vendor":
                     $chk = pg_query_params($conn, "SELECT 1 FROM vendors WHERE user_id = $1", [$uid]);
@@ -89,6 +93,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     case "labor":
                         header("Location: ../Labor/dashboard.php");
                         exit;
+                        case "company":
+    header("Location: ../Labor/company_dashboard.php");
+    exit;
 
                     case "vendor":
                         header("Location: ../Vendor/vendor_dashboard.php");

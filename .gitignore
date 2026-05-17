@@ -10,7 +10,7 @@ config/database.php
 config/config.php
 
 # PHP dependencies
-vendor/
+#vendor/
 
 # PostgreSQL dumps
 *.sql

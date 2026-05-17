@@ -88,7 +88,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <select name="provider_type" required>
             <option value="">Select Type</option>
             <option value="labor">Labor</option>
-            <option value="technician">Technician</option>
         </select>
 
         <button type="submit">Create Account</button>

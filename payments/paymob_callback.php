@@ -133,7 +133,7 @@ file_put_contents(__DIR__ . "/callback_debug.txt", print_r([
   "payment_status_before" => $order["payment_status"] ?? null,
   "business_user_id" => $order["business_user_id"] ?? null,
   "labor_data" => $order["labor_data"] ?? null,
-  "technician_data" => $order["technician_data"] ?? null,
+"installation_data" => $order["installation_data"] ?? null,
   "txn_order_id" => $obj["order"]["id"] ?? null,
   "merchant_order_id" => $obj["order"]["merchant_order_id"] ?? null,
   "amount_cents" => $obj["amount_cents"] ?? null,
@@ -191,7 +191,17 @@ if (!$success) {
 pg_query($conn, "BEGIN");
 
 try {
-  $alreadyPaid = (($order["payment_status"] ?? "") === "paid");
+  // Re-fetch with row lock inside transaction to prevent duplicate processing
+  $lockedRes = pg_query_params($conn, "
+    SELECT payment_status FROM orders WHERE id = $1 LIMIT 1 FOR UPDATE
+  ", [$orderId]);
+
+  if (!$lockedRes || pg_num_rows($lockedRes) === 0) {
+    throw new Exception("Order not found on lock.");
+  }
+
+  $lockedOrder = pg_fetch_assoc($lockedRes);
+  $alreadyPaid = ($lockedOrder["payment_status"] === "paid");
 
   if (!$alreadyPaid) {
     file_put_contents(__DIR__ . "/callback_debug.txt", "ENTERED !alreadyPaid block for order {$orderId}\n", FILE_APPEND);
@@ -293,14 +303,17 @@ try {
         $jobLocation = "Business Location";
       }
 
-          $laborMap = json_decode($order["labor_data"] ?? "[]", true);
+          $laborRaw           = json_decode($order["labor_data"] ?? "[]", true);
+          $laborMap           = $laborRaw["roles"] ?? $laborRaw; // fallback for old format
+          $salaryAmount       = (int)($laborRaw["salary_amount"] ?? 0);
+          $compensationType   = trim((string)($laborRaw["compensation_type"] ?? "monthly"));
           $technicians = json_decode($order["technician_data"] ?? "[]", true);
       if (is_array($laborMap) && !empty($laborMap)) {
-        $insJobSql = "
-          INSERT INTO jobs
-          (business_id, title, description, location, budget, status, price, worker_id, job_type)
-          VALUES ($1, $2, $3, $4, $5, 'available', $6, $7, 'labor')
-        ";
+       $insJobSql = "
+  INSERT INTO jobs
+  (business_id, title, description, location, salary_amount, compensation_type, status, price, worker_id, job_type, labor_role)
+  VALUES ($1, $2, $3, $4, $5, $6, 'available', 0, NULL, 'labor', $7)
+";
 
         foreach ($laborMap as $role => $qtyRaw) {
           $qty = (int)$qtyRaw;
@@ -312,14 +325,14 @@ try {
             $description = $roleLabel . " requested during setup (Order #{$orderId}).";
 
             $okJob = pg_query_params($conn, $insJobSql, [
-              $businessId,
-              $title,
-              $description,
-              $jobLocation,
-              0,
-              0,
-              null
-            ]);
+  $businessId,
+  $title,
+  $description,
+  $jobLocation,
+  $salaryAmount,
+  $compensationType,
+  strtolower(str_replace(" ", "_", $role)) // labor_role
+]);
 
             if (!$okJob) {
               throw new Exception("Insert labor job failed: " . pg_last_error($conn));
@@ -328,44 +341,46 @@ try {
         }
       }
 
-      $technicians = json_decode($order["technician_data"] ?? "[]", true);
+     $installationData = json_decode($order["installation_data"] ?? "[]", true);
+$installationServices = $installationData["services"] ?? $installationData;
 
-if (is_array($technicians) && !empty($technicians)) {
-  $insTechSql = "
-    INSERT INTO jobs
-    (business_id, title, description, location, budget, status, price, worker_id, job_type)
-    VALUES ($1, $2, $3, $4, $5, 'available', $6, $7, 'technician')
+if (is_array($installationServices) && !empty($installationServices) && $businessId !== null) {
+  $insInstallationSql = "
+    INSERT INTO installation_requests
+    (user_id, services, status, company_id, total_price)
+    VALUES ($1, $2, $3, $4, $5)
+    ON CONFLICT (user_id, services) DO NOTHING
   ";
 
-  foreach ($technicians as $service) {
+  foreach ($installationServices as $service) {
     $service = trim((string)$service);
     if ($service === "") continue;
 
-    $label = ucwords(str_replace(["_", "-"], " ", $service));
-    $title = $label . " Service";
-    $description = $label . " requested during setup (Order #{$orderId}).";
-
-    $okTech = pg_query_params($conn, $insTechSql, [
+    $okInstallation = pg_query_params($conn, $insInstallationSql, [
       $businessId,
-      $title,
-      $description,
-      $jobLocation,
-      0,
-      0,
-      null
+      "{" . $service . "}",
+      "pending",
+      null,
+      0
     ]);
 
-    if (!$okTech) {
-      throw new Exception("Insert technician job failed: " . pg_last_error($conn));
+    if (!$okInstallation) {
+      throw new Exception("Insert installation request failed: " . pg_last_error($conn));
     }
   }
 }
     }
+    // ✅ Mark business setup as completed
+$bizUserId = isset($order["business_user_id"]) && $order["business_user_id"] !== null
+    ? (int)$order["business_user_id"] : null;
 
-    unset($_SESSION["carts"]);
-    unset($_SESSION["wizard"]["pos_cart"]);
-    unset($_SESSION["wizard"]["kitchen_cart"]);
-  }
+if ($bizUserId) {
+    @pg_query_params($conn,
+        "UPDATE businesses SET setup_status = 'completed', updated_at = now() WHERE user_id = $1",
+        [$bizUserId]
+    );
+}
+    }
 
   pg_query($conn, "COMMIT");
   http_response_code(200);
@@ -373,5 +388,6 @@ if (is_array($technicians) && !empty($technicians)) {
 
 } catch (Throwable $e) {
   pg_query($conn, "ROLLBACK");
+  file_put_contents(__DIR__ . "/callback_debug.txt", "ROLLBACK ERROR for order {$orderId}: " . $e->getMessage() . "\n--------------------\n", FILE_APPEND);
   callback_fail("Callback processing failed: " . $e->getMessage(), 500);
 }

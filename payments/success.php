@@ -44,24 +44,37 @@ $sessionUserId = (int)($_SESSION["user_id"] ?? 0);
 $orderCustomerId = (int)($order["customer_user_id"] ?? 0);
 $orderBusinessId = (int)($order["business_user_id"] ?? 0);
 
+// Only check ownership if user is logged in
+// If not logged in, still show the success page (Paymob redirect)
+// If session is lost (ngrok/redirect domain switch), restore it from the order
 if ($sessionUserId <= 0) {
-  header("Location: ../auth/login.php");
-  exit;
-}
+  $restoreId = $orderBusinessId > 0 ? $orderBusinessId : $orderCustomerId;
+  if ($restoreId > 0) {
+    $_SESSION["user_id"] = $restoreId;
+    $sessionUserId = $restoreId;
+  }
+} else {
+  $isOwner =
+    ($orderCustomerId > 0 && $orderCustomerId === $sessionUserId) ||
+    ($orderBusinessId > 0 && $orderBusinessId === $sessionUserId);
 
-if ($orderCustomerId > 0 && $orderCustomerId !== $sessionUserId) {
-  http_response_code(403);
-  die("Unauthorized.");
-}
-if ($orderBusinessId > 0 && $orderBusinessId !== $sessionUserId) {
-  http_response_code(403);
-  die("Unauthorized.");
+  if (!$isOwner) {
+    // Session mismatch — restore from order
+    $restoreId = $orderBusinessId > 0 ? $orderBusinessId : $orderCustomerId;
+    if ($restoreId > 0) {
+      $_SESSION["user_id"] = $restoreId;
+      $sessionUserId = $restoreId;
+    }
+  }
 }
 
 if (($order["payment_status"] ?? "") !== "paid") {
   header("Location: payment_failed.php?order_id=" . urlencode((string)$orderId));
   exit;
 }
+// Clear carts now that payment is confirmed
+unset($_SESSION["carts"]);
+unset($_SESSION["wizard"]);
 ?>
 <!doctype html>
 <html lang="en">
@@ -80,7 +93,7 @@ if (($order["payment_status"] ?? "") !== "paid") {
   <div class="row justify-content-center">
     <div class="col-lg-8">
       <div class="p-4 p-lg-5 border rounded-4 bg-white text-center shadow-sm">
-        <h1 class="fw-bold mb-2">Payment Result</h1>
+        <h1 class="fw-bold mb-2">Payment succesful</h1>
         <p class="text-secondary mb-4">
           This page shows the latest status returned to your order.
         </p>

@@ -11,14 +11,18 @@ function egp($n){ return number_format((int)$n) . " EGP"; }
 
 $w = $_SESSION["wizard"] ?? [];
 
+
 $business     = $w["business_type"] ?? "";
 $size         = trim((string)($w["size"] ?? ""));
 $indoorSeats  = (int)($w["indoor_seats"]  ?? 0);
 $outdoorSeats = (int)($w["outdoor_seats"] ?? 0);
+$indoorTables  = (int)($w["indoor_tables"]  ?? 0);
+$outdoorTables = (int)($w["outdoor_tables"] ?? 0);
 $modules  = $w["modules"] ?? [];
+
 $budget   = (int)($w["budget"] ?? 0);
 $restaurantType = $w["restaurant_type"] ?? "standard_dining";
-
+$areaSqm = (int)($w["area_sqm"] ?? 50);
 // normalize size
 $sizeNorm = ucfirst(strtolower($size));
 if (in_array($sizeNorm, ["Small","Medium","Large"], true)) $size = $sizeNorm;
@@ -33,7 +37,8 @@ $labels = [
   "kitchen"     => "Kitchen / Equipment",
   "furniture"   => "Dining Area",
   "pos"         => "POS & Operations",
-  "electronics" => "Electronic Devices"
+  "electronics" => "Electronic Devices",
+  "ac"          => "Ambience & AC"
 ];
 
 function get_module_weights($restaurantType, $modules) {
@@ -43,28 +48,28 @@ function get_module_weights($restaurantType, $modules) {
       "pos"         => 3,
       "furniture"   => 2,
       "electronics" => 1,
-      "ambience"    => 0
+      "ac"    => 1
     ],
     "standard_dining" => [
       "kitchen"     => 5,
       "furniture"   => 3,
       "pos"         => 2,
       "electronics" => 2,
-      "ambience"    => 1
+      "ac"    => 2
     ],
     "premium_dining" => [
       "kitchen"     => 4,
       "furniture"   => 5,
       "pos"         => 2,
       "electronics" => 2,
-      "ambience"    => 2
+      "ac"    => 3
     ],
     "cloud_kitchen" => [
       "kitchen"     => 8,
       "pos"         => 4,
       "furniture"   => 0,
       "electronics" => 0,
-      "ambience"    => 0
+      "ac"    => 0
     ]
   ];
 
@@ -112,7 +117,8 @@ $infraTier       = "Balanced";
 $kitchenCap = $alloc["kitchen"] ?? 0;
 $posCap     = $alloc["pos"] ?? 0;
 $furnitureCap   = $alloc["furniture"] ?? 0;
-$infraCap       = $alloc["infra"] ?? 0;
+$infraCap = $alloc["infra"] ?? 0;
+$acCap    = $alloc["ac"] ?? 0;
 $electronicsCap = $alloc["electronics"] ?? 0;
 
 /* ---------------- Fake catalogs (fallback) ---------------- */
@@ -152,7 +158,7 @@ $POS_CATALOG = [
 
 $KITCHEN_CATALOG_ACTIVE = [
   "oven"=>[], "fryer"=>[], "grill"=>[], "microwave"=>[],
-  "fridge"=>[], "freezer"=>[], "blender"=>[], "mixer"=>[], "coffee"=>[]
+  "fridge"=>[], "freezer"=>[], "blender"=>[], "mixer"=>[], "coffee"=>[], "stove"=>[]
 ];
 
 $POS_CATALOG_ACTIVE = $POS_CATALOG;
@@ -333,6 +339,7 @@ if (isset($conn) && $conn) {
   SELECT
     p.id,
     p.product_name,
+    p.product_type,
     p.price,
     p.priority,
     p.tier,
@@ -458,6 +465,49 @@ $tmp[$type][] = [
     if ($count > 0) {
       $FURNITURE_CATALOG_ACTIVE = $tmp;
       $FURNITURE_DB_OK = true;
+    }
+  }
+}
+
+/* ---------------- DB load AC ---------------- */
+if (isset($conn) && $conn) {
+  $sqlAcCatalog = "
+    SELECT
+      p.id, p.product_name, p.product_type, p.price, p.priority, p.tier,
+      p.brand, p.stock_quantity, p.specs, p.vendor_user_id, p.product_group_key,
+      p.created_at, u.name AS vendor_name, c.name AS category_name,
+      (SELECT pi.image_url FROM product_images pi WHERE pi.product_id = p.id ORDER BY pi.id ASC LIMIT 1) AS image_url
+    FROM products p
+    LEFT JOIN users u ON u.id = p.vendor_user_id
+    LEFT JOIN categories c ON c.id = p.category_id
+    WHERE p.module = 'ac'
+    ORDER BY p.priority ASC, p.price ASC
+  ";
+  $resAc = @pg_query($conn, $sqlAcCatalog);
+  if ($resAc) {
+    $tmpAc = ["ac" => []];
+    $countAc = 0;
+    while ($row = pg_fetch_assoc($resAc)) {
+      $tmpAc["ac"][] = [
+        "id"                => (string)$row["id"],
+        "name"              => $row["product_name"],
+        "brand"             => $row["brand"] ?: null,
+        "tier"              => $row["tier"] ?: null,
+        "vendor_name"       => $row["vendor_name"] ?: null,
+        "category_name"     => $row["category_name"] ?: null,
+        "price"             => (int)$row["price"],
+        "image_url"         => $row["image_url"] ?: null,
+        "vendor_user_id"    => $row["vendor_user_id"] ?? null,
+        "product_group_key" => $row["product_group_key"] ?? null,
+        "stock_quantity"    => (int)($row["stock_quantity"] ?? 0),
+        "specs"             => !empty($row["specs"]) ? json_decode($row["specs"], true) : [],
+        "created_at"        => $row["created_at"] ?? null,
+      ];
+      $countAc++;
+    }
+    if ($countAc > 0) {
+      $INFRA_CATALOG_ACTIVE = $tmpAc;
+      $INFRA_DB_OK = true;
     }
   }
 }
@@ -724,6 +774,17 @@ function furniture_quantities_by_size($indoorSeats, $restaurantType = "standard_
     "tv"    => $tvs,
   ];
 }
+function ac_units_from_area($areaSqm){
+  return max(1, (int)ceil($areaSqm / 40));
+}
+
+function ac_tonnage_from_area_per_unit($areaSqm, $acUnits){
+  $areaPerUnit = $areaSqm / max(1, $acUnits);
+  if ($areaPerUnit <= 20) return ["tonnage" => "1.5", "rate" => 700];
+  if ($areaPerUnit <= 30) return ["tonnage" => "2",   "rate" => 750];
+  if ($areaPerUnit <= 45) return ["tonnage" => "2.5", "rate" => 850];
+  return                         ["tonnage" => "3",   "rate" => 900];
+}
 function dining_set_target_spec($restaurantType, $size){
   $restaurantType = strtolower(trim((string)$restaurantType));
   $size = ucfirst(strtolower(trim((string)$size)));
@@ -810,12 +871,8 @@ function pick_top_dining_set_options($catalog, $restaurantType, $size, $tier, $l
     if (!is_array($specs)) $specs = [];
 
     $seatCount = (int)($specs["seat_count"] ?? 0);
-    $layoutType = (string)($specs["layout_type"] ?? "");
-    $style = (string)($specs["restaurant_style"] ?? "");
 
     if ($seatCount !== (int)$target["seat_count"]) return false;
-    if ($layoutType !== $target["layout_type"]) return false;
-    if ($style !== $target["restaurant_style"]) return false;
 
     return true;
   });
@@ -926,39 +983,10 @@ function build_item_alternatives($selectedProductId, $pool, $limit = 3){
 }
 
 function tv_target_spec($restaurantType, $size){
-  $restaurantType = strtolower(trim((string)$restaurantType));
-  $size = ucfirst(strtolower(trim((string)$size)));
-
-  if ($restaurantType === "fast_food") {
-    return [
-      "screen_size" => match($size) {
-        "Small" => 43,
-        "Medium" => 50,
-        "Large" => 55,
-        default => 43
-      }
-    ];
-  }
-
-  if ($restaurantType === "premium_dining") {
-    return [
-      "screen_size" => match($size) {
-        "Small" => 43,
-        "Medium" => 50,
-        "Large" => 55,
-        default => 50
-      }
-    ];
-  }
-
-  return [
-    "screen_size" => match($size) {
-      "Small" => 43,
-      "Medium" => 50,
-      "Large" => 55,
-      default => 50
-    }
-  ];
+  $seats = (int)($GLOBALS["indoorSeats"] ?? 0);
+  if ($seats < 30)      return ["screen_size" => 43];
+  if ($seats <= 60)     return ["screen_size" => 50];
+  return                       ["screen_size" => 55];
 }
 
 
@@ -1275,7 +1303,7 @@ function build_furniture_cart_by_budget($catalog, $size, $cap){
 
   $cart = ["items" => []];
 
-  $setQty = dining_set_quantity_by_size($restaurantType, $size);
+$setQty = max(1, (int)($GLOBALS["indoorTables"] ?? ceil((int)($GLOBALS["indoorSeats"] ?? 0) / 4)));
   $setOptions = pick_top_dining_set_options($catalog, $restaurantType, $size, $tier, 3);
 
   if (!empty($setOptions)) {
@@ -1308,7 +1336,7 @@ function build_furniture_cart_by_budget($catalog, $size, $cap){
     /* ===== PASTE TV CODE HERE ===== */
 
 $remaining = $cap - cart_total($cart);
-$tvQty = tv_quantity_by_context($restaurantType, $size);
+$tvQty = ($restaurantType === "cloud_kitchen") ? 0 : max(1, (int)ceil((int)($GLOBALS["indoorSeats"] ?? 0) / 20));
 $tvOptions = pick_top_tv_options($catalog, $restaurantType, $size, $tier, 3);
 
 if ($remaining > 0 && $tvQty > 0 && !empty($tvOptions)) {
@@ -1340,9 +1368,61 @@ if ($remaining > 0 && $tvQty > 0 && !empty($tvOptions)) {
 }
   return $cart;
 }
+function build_ac_cart_by_budget($catalog, $areaSqm) {
+  $acUnits   = ac_units_from_area($areaSqm);
+  $tonnageData = ac_tonnage_from_area_per_unit($areaSqm, $acUnits);
+  $tonnage   = $tonnageData["tonnage"];
 
+  $cart = ["items" => []];
+
+  if (empty($catalog["ac"])) return $cart;
+
+  // Filter by matching tonnage in specs, fallback to any
+  $matching = array_filter($catalog["ac"], function($p) use ($tonnage) {
+    $specs = $p["specs"] ?? [];
+    $hp    = (float)($specs["hp"] ?? 0);
+    // Map tonnage string to HP range
+    $hpMap = ["1.5" => [1.5, 1.5], "2" => [2.0, 2.25], "2.5" => [2.5, 2.5], "3" => [3.0, 3.0]];
+    $range = $hpMap[$tonnage] ?? null;
+    if (!$range) return true; // no filter if tonnage unknown
+    return $hp >= $range[0] && $hp <= $range[1];
+  });
+
+  // Sort by price ASC
+  $matching = array_values($matching);
+  usort($matching, fn($a, $b) => (int)$a["price"] <=> (int)$b["price"]);
+
+  if (empty($matching)) $matching = array_values($catalog["ac"]); // fallback
+
+  $recommended = $matching[0];
+
+  $cart["items"]["ac"] = [
+    "type"              => "ac",
+    "product_id"        => $recommended["id"],
+    "name"              => $recommended["name"],
+    "unit"              => (int)$recommended["price"],
+    "qty"               => $acUnits,
+    "image_url"         => $recommended["image_url"] ?? null,
+    "brand"             => $recommended["brand"] ?? null,
+    "vendor_name"       => $recommended["vendor_name"] ?? null,
+    "product_name"      => $recommended["name"],
+    "tier"              => $recommended["tier"] ?? null,
+    "module"            => "ac",
+    "category_id"       => null,
+    "product_group_key" => $recommended["product_group_key"] ?? null,
+    "vendor_user_id"    => $recommended["vendor_user_id"] ?? null,
+    "stock_quantity"    => $recommended["stock_quantity"] ?? 0,
+    "specs"             => $recommended["specs"] ?? [],
+    "tonnage"           => $tonnage,
+    "alternatives"      => build_distinct_alternatives($recommended, $matching, 3),
+  ];
+
+  return $cart;
+}
 
 /* ---------------- Handle actions (Recalc / Qty / Replace) ---------------- */
+
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   if (isset($_POST["recalc_pos"])) {
@@ -1483,39 +1563,73 @@ if (isset($_POST["update_furniture_qty"])) {
   }
 
   if (isset($_POST["replace_furniture_item"])) {
-  $type = $_POST["type"] ?? "";
-  $newId = $_POST["new_product_id"] ?? "";
+    $type = $_POST["type"] ?? "";
+    $newId = $_POST["new_product_id"] ?? "";
 
-  if (isset($_SESSION["wizard"]["furniture_cart"]["items"][$type])) {
-    $p = find_by_id($GLOBALS["FURNITURE_CATALOG_ACTIVE"], $type, $newId);
-    if ($p) {
-      $_SESSION["wizard"]["furniture_cart"]["items"][$type]["product_id"] = $p["id"];
-      $_SESSION["wizard"]["furniture_cart"]["items"][$type]["name"] = $p["name"];
-      $_SESSION["wizard"]["furniture_cart"]["items"][$type]["unit"] = (int)$p["price"];
-      $_SESSION["wizard"]["furniture_cart"]["items"][$type]["image_url"] = $p["image_url"] ?? null;
-      $_SESSION["wizard"]["furniture_cart"]["items"][$type]["brand"] = $p["brand"] ?? null;
-      $_SESSION["wizard"]["furniture_cart"]["items"][$type]["vendor_name"] = $p["vendor_name"] ?? null;
-      $_SESSION["wizard"]["furniture_cart"]["items"][$type]["vendor_user_id"] = $p["vendor_user_id"] ?? null;
-      $_SESSION["wizard"]["furniture_cart"]["items"][$type]["product_group_key"] = $p["product_group_key"] ?? null;
-      $_SESSION["wizard"]["furniture_cart"]["items"][$type]["alternatives"] = build_distinct_alternatives(
-        $p,
-        $GLOBALS["FURNITURE_CATALOG_ACTIVE"][$type] ?? [],
-        3
-      );
+    if (isset($_SESSION["wizard"]["furniture_cart"]["items"][$type])) {
+      $p = find_by_id($GLOBALS["FURNITURE_CATALOG_ACTIVE"], $type, $newId);
+      if ($p) {
+        $_SESSION["wizard"]["furniture_cart"]["items"][$type]["product_id"] = $p["id"];
+        $_SESSION["wizard"]["furniture_cart"]["items"][$type]["name"] = $p["name"];
+        $_SESSION["wizard"]["furniture_cart"]["items"][$type]["unit"] = (int)$p["price"];
+        $_SESSION["wizard"]["furniture_cart"]["items"][$type]["image_url"] = $p["image_url"] ?? null;
+        $_SESSION["wizard"]["furniture_cart"]["items"][$type]["brand"] = $p["brand"] ?? null;
+        $_SESSION["wizard"]["furniture_cart"]["items"][$type]["vendor_name"] = $p["vendor_name"] ?? null;
+        $_SESSION["wizard"]["furniture_cart"]["items"][$type]["vendor_user_id"] = $p["vendor_user_id"] ?? null;
+        $_SESSION["wizard"]["furniture_cart"]["items"][$type]["product_group_key"] = $p["product_group_key"] ?? null;
+        $_SESSION["wizard"]["furniture_cart"]["items"][$type]["alternatives"] = build_distinct_alternatives(
+          $p,
+          $GLOBALS["FURNITURE_CATALOG_ACTIVE"][$type] ?? [],
+          3
+        );
+      }
     }
+    header("Location: packages.php?module=furniture");
+    exit;
   }
 
-  header("Location: packages.php?module=furniture");
-  exit;
-}
+  if (isset($_POST["recalc_ac"])) {
+    $_SESSION["wizard"]["ac_cart"] = build_ac_cart_by_budget($GLOBALS["INFRA_CATALOG_ACTIVE"], $GLOBALS["areaSqm"]);
+    header("Location: packages.php?module=ac");
+    exit;
+  }
+
+  if (isset($_POST["update_ac_qty"])) {
+    $type  = $_POST["type"] ?? "";
+    $delta = (int)($_POST["delta"] ?? 0);
+    if (isset($_SESSION["wizard"]["ac_cart"]["items"][$type])) {
+      $qty = max(1, (int)$_SESSION["wizard"]["ac_cart"]["items"][$type]["qty"] + $delta);
+      $_SESSION["wizard"]["ac_cart"]["items"][$type]["qty"] = $qty;
+    }
+    header("Location: packages.php?module=ac");
+    exit;
+  }
+
+  if (isset($_POST["replace_ac_item"])) {
+    $type  = $_POST["type"] ?? "";
+    $newId = $_POST["new_product_id"] ?? "";
+    if (isset($_SESSION["wizard"]["ac_cart"]["items"][$type])) {
+      $p = find_by_id($GLOBALS["INFRA_CATALOG_ACTIVE"], $type, $newId);
+      if ($p) {
+        $_SESSION["wizard"]["ac_cart"]["items"][$type]["product_id"]        = $p["id"];
+        $_SESSION["wizard"]["ac_cart"]["items"][$type]["name"]              = $p["name"];
+        $_SESSION["wizard"]["ac_cart"]["items"][$type]["unit"]              = (int)$p["price"];
+        $_SESSION["wizard"]["ac_cart"]["items"][$type]["image_url"]         = $p["image_url"] ?? null;
+        $_SESSION["wizard"]["ac_cart"]["items"][$type]["brand"]             = $p["brand"] ?? null;
+        $_SESSION["wizard"]["ac_cart"]["items"][$type]["vendor_name"]       = $p["vendor_name"] ?? null;
+        $_SESSION["wizard"]["ac_cart"]["items"][$type]["vendor_user_id"]    = $p["vendor_user_id"] ?? null;
+        $_SESSION["wizard"]["ac_cart"]["items"][$type]["product_group_key"] = $p["product_group_key"] ?? null;
+        $_SESSION["wizard"]["ac_cart"]["items"][$type]["alternatives"]      = build_distinct_alternatives($p, $GLOBALS["INFRA_CATALOG_ACTIVE"]["ac"] ?? [], 3);
+      }
+   }
+header("Location: packages.php?module=ac");
+    exit;
+  }
 
 }
 
 /* ---------------- Active module ---------------- */
 $activeModule = $_GET["module"] ?? (in_array("pos",$modules,true) ? "pos" : $modules[0]);
-
-
-
 
 /* ---------------- If tier changed → reset cart ---------------- */
 if (($_SESSION["wizard"]["pos_cart_tier"] ?? null) !== $posTier) {
@@ -1556,7 +1670,19 @@ if ($furnitureCap > 0 && empty($_SESSION["wizard"]["furniture_cart"])) {
     $furnitureCap
   );
 }
+if ($acCap > 0 && empty($_SESSION["wizard"]["ac_cart"])) {
+  $_SESSION["wizard"]["ac_cart"] = build_ac_cart_by_budget(
+    $INFRA_CATALOG_ACTIVE,
+    $areaSqm
+  );
+}
 
+// Store AC unit count for service_jobs.php pricing
+$acUnits = ac_units_from_area($areaSqm);
+$acTonnageData = ac_tonnage_from_area_per_unit($areaSqm, $acUnits);
+$_SESSION["wizard"]["ac_units"]   = $acUnits;
+$_SESSION["wizard"]["ac_tonnage"] = $acTonnageData["tonnage"];
+$_SESSION["wizard"]["ac_rate"]    = $acTonnageData["rate"];
 
 
 $posCart = $_SESSION["wizard"]["pos_cart"] ?? null;
@@ -1573,14 +1699,19 @@ $furnitureCart = $_SESSION["wizard"]["furniture_cart"] ?? null;
 $furnitureTotal = $furnitureCart ? cart_total($furnitureCart) : 0;
 $furnitureRemaining = max(0, $furnitureCap - $furnitureTotal);
 $furnitureOver = max(0, $furnitureTotal - $furnitureCap);
+$acCart      = $_SESSION["wizard"]["ac_cart"] ?? null;
+$acTotal     = $acCart ? cart_total($acCart) : 0;
+$acRemaining = max(0, $acCap - $acTotal);
+$acOver      = max(0, $acTotal - $acCap);
 
 
-$grandTotal = (int)$posTotal + (int)$kitchenTotal + (int)$furnitureTotal;
+$grandTotal = (int)$posTotal + (int)$kitchenTotal + (int)$furnitureTotal + (int)$acTotal;
 
 $hasAnyItems = false;
 if (!empty($_SESSION["wizard"]["pos_cart"]["items"])) $hasAnyItems = true;
 if (!empty($_SESSION["wizard"]["kitchen_cart"]["items"])) $hasAnyItems = true;
 if (!empty($_SESSION["wizard"]["furniture_cart"]["items"])) $hasAnyItems = true;
+if (!empty($_SESSION["wizard"]["ac_cart"]["items"])) $hasAnyItems = true;
 
 if (!isset($_SESSION["carts"])) $_SESSION["carts"] = [];
 $_SESSION["carts"]["pos"] = $posCart ?? ($_SESSION["carts"]["pos"] ?? null);
@@ -1692,8 +1823,8 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                       </div>
                     </div>
 
-                    <?php if (!empty($it["alternatives"])): ?>
-                      <div class="sf-pkg-alts">
+                    <div class="sf-pkg-alts">
+                      <?php if (!empty($it["alternatives"])): ?>
                         <?php foreach (array_slice($it["alternatives"], 0, 3) as $alt): ?>
                           <form method="post" class="sf-pkg-chip m-0">
                             <input type="hidden" name="replace_item" value="1">
@@ -1713,8 +1844,10 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                             </button>
                           </form>
                         <?php endforeach; ?>
-                      </div>
-                    <?php endif; ?>
+                      <?php else: ?>
+                        <div class="sf-pkg-no-alts">No alternatives available</div>
+                      <?php endif; ?>
+                    </div>
 
                     <?php
                       $sellers = [];
@@ -1748,15 +1881,17 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                       }
                     ?>
 
-                    <?php if (!empty($it["product_group_key"])): ?>
-                      <div class="sf-pkg-sellers-trigger">
+                    <div class="sf-pkg-sellers-trigger">
+                      <?php if (!empty($it["product_group_key"])): ?>
                         <button type="button" class="btn btn-link p-0 sf-text-link"
                                 data-sellers-open="1"
                                 data-group="<?= htmlspecialchars($it["product_group_key"]) ?>">
                           View other sellers
                         </button>
-                      </div>
-                    <?php endif; ?>
+                      <?php else: ?>
+                        <span class="sf-pkg-no-sellers">No other sellers</span>
+                      <?php endif; ?>
+                    </div>
 
                     <div class="sf-sellers-panel d-none" data-group="<?= htmlspecialchars($it["product_group_key"] ?? "") ?>">
                       <?php
@@ -1868,8 +2003,8 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                       </div>
                     </div>
 
-                    <?php if (!empty($it["alternatives"])): ?>
-                      <div class="sf-pkg-alts">
+                    <div class="sf-pkg-alts">
+                      <?php if (!empty($it["alternatives"])): ?>
                         <?php foreach (array_slice($it["alternatives"], 0, 3) as $alt): ?>
                           <form method="post" class="sf-pkg-chip m-0">
                             <input type="hidden" name="replace_kitchen_item" value="1">
@@ -1889,8 +2024,10 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                             </button>
                           </form>
                         <?php endforeach; ?>
-                      </div>
-                    <?php endif; ?>
+                      <?php else: ?>
+                        <div class="sf-pkg-no-alts">No alternatives available</div>
+                      <?php endif; ?>
+                    </div>
 
                     <?php
                       $sellers = [];
@@ -1924,15 +2061,17 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                       }
                     ?>
 
-                    <?php if (!empty($it["product_group_key"])): ?>
-                      <div class="sf-pkg-sellers-trigger">
+                    <div class="sf-pkg-sellers-trigger">
+                      <?php if (!empty($it["product_group_key"])): ?>
                         <button type="button" class="btn btn-link p-0 sf-text-link"
                                 data-sellers-open="1"
                                 data-group="<?= htmlspecialchars($it["product_group_key"]) ?>">
                           View other sellers
                         </button>
-                      </div>
-                    <?php endif; ?>
+                      <?php else: ?>
+                        <span class="sf-pkg-no-sellers">No other sellers</span>
+                      <?php endif; ?>
+                    </div>
 
                     <div class="sf-sellers-panel d-none" data-group="<?= htmlspecialchars($it["product_group_key"] ?? "") ?>">
                       <?php
@@ -2038,8 +2177,8 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
               </div>
             </div>
 
-            <?php if (!empty($it["alternatives"])): ?>
-              <div class="sf-pkg-alts">
+            <div class="sf-pkg-alts">
+              <?php if (!empty($it["alternatives"])): ?>
                 <?php foreach (array_slice($it["alternatives"], 0, 3) as $alt): ?>
                   <form method="post" class="sf-pkg-chip m-0">
                     <input type="hidden" name="replace_furniture_item" value="1">
@@ -2059,18 +2198,22 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
                     </button>
                   </form>
                 <?php endforeach; ?>
-              </div>
-            <?php endif; ?>
+              <?php else: ?>
+                <div class="sf-pkg-no-alts">No alternatives available</div>
+              <?php endif; ?>
+            </div>
 
-            <?php if (!empty($it["product_group_key"])): ?>
-              <div class="sf-pkg-sellers-trigger">
+            <div class="sf-pkg-sellers-trigger">
+              <?php if (!empty($it["product_group_key"])): ?>
                 <button type="button" class="btn btn-link p-0 sf-text-link"
                         data-sellers-open="1"
                         data-group="<?= htmlspecialchars($it["product_group_key"]) ?>">
                   View other sellers
                 </button>
-              </div>
-            <?php endif; ?>
+              <?php else: ?>
+                <span class="sf-pkg-no-sellers">No other sellers</span>
+              <?php endif; ?>
+            </div>
 
             <div class="sf-sellers-panel d-none" data-group="<?= htmlspecialchars($it["product_group_key"] ?? "") ?>">
               <div class="sf-empty-inline">No other sellers available for this product.</div>
@@ -2084,33 +2227,137 @@ $_SESSION["carts"]["furniture"] = $furnitureCart ?? ($_SESSION["carts"]["furnitu
 
 
           
-        <?php else: ?>
-          <div class="sf-module-shell">
-            <div class="sf-module-shell-head">
-              <div>
-                <div class="sf-module-shell-kicker">Module</div>
-                <h2 class="sf-module-shell-title"><?= htmlspecialchars($labels[$activeModule] ?? $activeModule) ?></h2>
-                <div class="sf-module-shell-sub">This section is reserved for the next package builder step.</div>
-              </div>
+<?php elseif ($activeModule === "ac"): ?>
+  <div class="sf-module-shell">
 
-            </div>
-            <div class="sf-pkg-progress-wrap">
-              <div class="sf-pkg-progress-row">
-                <span class="sf-pkg-progress-label"><?= htmlspecialchars($labels[$activeModule] ?? $activeModule) ?></span>
-                <span class="sf-pkg-progress-used">0 EGP / <?= egp($alloc[$activeModule] ?? 0) ?></span>
-                <span class="sf-pkg-progress-remaining"><?= egp($alloc[$activeModule] ?? 0) ?> remaining</span>
-              </div>
-              <div class="sf-pkg-progress-track">
-                <div class="sf-pkg-progress-fill" style="width:0%"></div>
-              </div>
-            </div>
+    <div class="sf-pkg-progress-wrap">
+      <div class="sf-pkg-progress-row">
+        <span class="sf-pkg-progress-label">Ambience &amp; AC</span>
+        <span class="sf-pkg-progress-used"><?= egp($acTotal) ?> / <?= egp($acCap) ?></span>
+        <span class="sf-pkg-progress-remaining <?= $acOver > 0 ? 'is-over' : '' ?>">
+          <?php if($acOver > 0): ?><?= egp($acOver) ?> over cap<?php else: ?><?= egp($acRemaining) ?> remaining<?php endif; ?>
+        </span>
+      </div>
+      <div class="sf-pkg-progress-track">
+        <div class="sf-pkg-progress-fill <?= $acOver > 0 ? 'is-over' : '' ?>" style="width:<?= $acCap > 0 ? min(100, round($acTotal / $acCap * 100)) : 0 ?>%"></div>
+      </div>
+    </div>
 
-            <div class="sf-empty-module-box">
-              This module is empty for now. We’ll build it next like POS/Kitchen
-              with an auto-generated editable cart.
+    <?php
+      $acUnitsDisplay   = ac_units_from_area($areaSqm);
+      $acTonnageDisplay = ac_tonnage_from_area_per_unit($areaSqm, $acUnitsDisplay);
+    ?>
+    <div style="background:#f0f6ff;border:1px solid rgba(0,76,172,.12);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:.85rem;color:#374151;">
+      <i class="bi bi-info-circle me-1" style="color:#004cac;"></i>
+      Based on your <strong><?= $areaSqm ?> m²</strong> area — we recommend
+      <strong><?= $acUnitsDisplay ?> unit<?= $acUnitsDisplay > 1 ? 's' : '' ?></strong>
+      of <strong><?= $acTonnageDisplay["tonnage"] ?> ton</strong> each.
+    </div>
+
+    <div class="sf-module-toolbar">
+      <form method="post" class="m-0">
+        <input type="hidden" name="recalc_ac" value="1">
+        <button class="btn sf-btn-light-main btn-sm">
+          <i class="bi bi-stars"></i> Recalculate Auto Package
+        </button>
+      </form>
+    </div>
+
+    <?php if (!$acCart || empty($acCart["items"])): ?>
+      <div class="alert alert-warning mt-3">No AC products available yet. Add products from the vendor panel.</div>
+    <?php else: ?>
+      <div class="sf-pkg-grid">
+        <?php foreach ($acCart["items"] as $type => $it): ?>
+          <article class="sf-pkg-card" id="row_ac_<?= htmlspecialchars($type) ?>">
+            <div class="sf-pkg-card-media">
+              <?php if (!empty($it["image_url"])): ?>
+                <img src="<?= htmlspecialchars($it["image_url"]) ?>" alt="">
+              <?php else: ?>
+                <div class="sf-pkg-card-fallback">AC</div>
+              <?php endif; ?>
             </div>
-          </div>
-        <?php endif; ?>
+            <div class="sf-pkg-card-body">
+              <h3 class="sf-pkg-card-name"><?= htmlspecialchars($it["name"]) ?></h3>
+              <div class="sf-pkg-card-meta">
+                <?php if (!empty($it["brand"])): ?><span><?= htmlspecialchars($it["brand"]) ?></span><?php endif; ?>
+                <?php if (!empty($it["vendor_name"])): ?><span><?= htmlspecialchars($it["vendor_name"]) ?></span><?php endif; ?>
+                <?php if (!empty($it["tonnage"])): ?>
+                  <span style="color:#004cac;font-weight:700;"><?= htmlspecialchars($it["tonnage"]) ?> Ton</span>
+                <?php endif; ?>
+              </div>
+              <div class="sf-pkg-card-price"><?= egp($it["unit"]) ?></div>
+            </div>
+            <div class="sf-pkg-card-footer">
+              <div class="sf-pkg-qty">
+                <form method="post" class="m-0">
+                  <input type="hidden" name="update_ac_qty" value="1">
+                  <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>">
+                  <input type="hidden" name="delta" value="-1">
+                  <button class="sf-pkg-qty-btn">−</button>
+                </form>
+                <span class="sf-pkg-qty-val"><?= (int)$it["qty"] ?></span>
+                <form method="post" class="m-0">
+                  <input type="hidden" name="update_ac_qty" value="1">
+                  <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>">
+                  <input type="hidden" name="delta" value="1">
+                  <button class="sf-pkg-qty-btn">+</button>
+                </form>
+              </div>
+            </div>
+            <div class="sf-pkg-alts">
+              <?php if (!empty($it["alternatives"])): ?>
+                <?php foreach (array_slice($it["alternatives"], 0, 3) as $alt): ?>
+                  <form method="post" class="sf-pkg-chip m-0">
+                    <input type="hidden" name="replace_ac_item" value="1">
+                    <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>">
+                    <input type="hidden" name="new_product_id" value="<?= htmlspecialchars($alt["id"]) ?>">
+                    <button type="submit" class="sf-pkg-chip-btn">
+                      <div class="sf-pkg-chip-thumb">
+                        <?php if (!empty($alt["image_url"])): ?>
+                          <img src="<?= htmlspecialchars($alt["image_url"]) ?>" class="sf-pkg-chip-img" alt="" onerror="this.style.display='none'">
+                        <?php else: ?>
+                          <div class="sf-pkg-chip-fallback">AC</div>
+                        <?php endif; ?>
+                      </div>
+                      <span class="sf-pkg-chip-name"><?= htmlspecialchars($alt["name"]) ?></span>
+                      <span class="sf-pkg-chip-price"><?= egp($alt["price"]) ?></span>
+                    </button>
+                  </form>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <div class="sf-pkg-no-alts">No alternatives available</div>
+              <?php endif; ?>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </div>
+
+<?php else: ?>
+  <div class="sf-module-shell">
+    <div class="sf-module-shell-head">
+      <div>
+        <div class="sf-module-shell-kicker">Module</div>
+        <h2 class="sf-module-shell-title"><?= htmlspecialchars($labels[$activeModule] ?? $activeModule) ?></h2>
+        <div class="sf-module-shell-sub">This section is reserved for the next package builder step.</div>
+      </div>
+    </div>
+    <div class="sf-pkg-progress-wrap">
+      <div class="sf-pkg-progress-row">
+        <span class="sf-pkg-progress-label"><?= htmlspecialchars($labels[$activeModule] ?? $activeModule) ?></span>
+        <span class="sf-pkg-progress-used">0 EGP / <?= egp($alloc[$activeModule] ?? 0) ?></span>
+        <span class="sf-pkg-progress-remaining"><?= egp($alloc[$activeModule] ?? 0) ?> remaining</span>
+      </div>
+      <div class="sf-pkg-progress-track">
+        <div class="sf-pkg-progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="sf-empty-module-box">
+      This module is empty for now.
+    </div>
+  </div>
+<?php endif; ?>
 
     </div><!-- /.sf-pkg-content -->
   </div><!-- /.container.sf-pkg-body -->
