@@ -370,7 +370,16 @@ if (is_array($installationServices) && !empty($installationServices) && $busines
   }
 }
     }
+    // ✅ Mark business setup as completed
+$bizUserId = isset($order["business_user_id"]) && $order["business_user_id"] !== null
+    ? (int)$order["business_user_id"] : null;
 
+if ($bizUserId) {
+    @pg_query_params($conn,
+        "UPDATE businesses SET setup_status = 'completed', updated_at = now() WHERE user_id = $1",
+        [$bizUserId]
+    );
+}
     }
 
   pg_query($conn, "COMMIT");

@@ -74,9 +74,7 @@ if (($order["payment_status"] ?? "") !== "paid") {
 }
 // Clear carts now that payment is confirmed
 unset($_SESSION["carts"]);
-unset($_SESSION["wizard"]["pos_cart"]);
-unset($_SESSION["wizard"]["kitchen_cart"]);
-unset($_SESSION["wizard"]["furniture_cart"]);
+unset($_SESSION["wizard"]);
 ?>
 <!doctype html>
 <html lang="en">
